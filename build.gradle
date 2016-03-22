@@ -16,6 +16,6 @@ subprojects {
         mavenCentral()
     }
 
-/*    group = GROUP
-    version = VERSION_NAME*/
+    group = GROUP
+    version = VERSION_NAME
 }

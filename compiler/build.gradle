@@ -1,11 +1,8 @@
 apply plugin: 'java'
+apply plugin: 'maven'
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
-
-repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-}
 
 dependencies {
     compile project(':library')
@@ -15,5 +12,3 @@ dependencies {
     compile deps.javax_annotation_jsr250
     compile deps.processor_workflow
 }
-
-apply from: '../mvn-publish.gradle'
