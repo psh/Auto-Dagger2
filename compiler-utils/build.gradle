@@ -1,16 +1,16 @@
 apply plugin: 'java'
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    compile 'com.google.auto:auto-common:0.4'
-    compile 'com.google.guava:guava:18.0'
-    compile 'com.squareup:javapoet:1.1.0'
-    compile 'org.apache.commons:commons-lang3:3.4'
+    implementation 'com.google.auto:auto-common:0.8'
+    implementation 'com.google.guava:guava:22.0'
+    implementation 'com.squareup:javapoet:1.8.0'
+    implementation 'org.apache.commons:commons-lang3:3.4'
 
-    compile project(':library')
-    compile deps.processor_workflow
+    implementation project(':library')
+    implementation deps.processor_workflow
 }
 
 apply from: '../mvn-publish.gradle'
