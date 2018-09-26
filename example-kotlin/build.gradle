@@ -1,22 +1,27 @@
 buildscript {
-    ext.kotlin_version = '1.0.0-beta-2423'
+    ext.kotlin_version = '1.1.3-2'
+    repositories {
+        jcenter()
+        google()
+    }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'com.android.tools.build:gradle:3.0.0-alpha9'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
 
     defaultConfig {
         applicationId "autodagger.example_kotlin"
         minSdkVersion 16
-        targetSdkVersion 22
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
     }
@@ -29,8 +34,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     sourceSets {
@@ -44,11 +49,11 @@ android {
 
 dependencies {
     kapt project(':compiler')
-    compile project(':library')
+    implementation project(':library')
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     kapt deps.dagger2_compiler
-    compile deps.dagger2
-    provided deps.javax_annotation_jsr250
+    implementation deps.dagger2
+    compileOnly deps.javax_annotation_jsr250
 }

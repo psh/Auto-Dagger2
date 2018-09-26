@@ -1,14 +1,14 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    compile project(':library')
-    compile project(':compiler-utils')
+    implementation project(':library')
+    implementation project(':compiler-utils')
 
-    compile deps.dagger2
-    compile deps.javax_annotation_jsr250
-    compile deps.processor_workflow
+    implementation deps.dagger2
+    implementation deps.javax_annotation_jsr250
+    implementation deps.processor_workflow
 }
