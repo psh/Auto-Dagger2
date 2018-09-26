@@ -1,5 +1,13 @@
 # Auto Dagger2
 
+[![](https://jitpack.io/v/matfax/auto-dagger2.svg)](https://jitpack.io/#matfax/auto-dagger2)
+[![Build Status](https://travis-ci.com/matfax/auto-dagger2.svg?branch=master)](https://travis-ci.com/matfax/auto-dagger2)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8ff996f65cb94130bd4f95f4df57c522)](https://www.codacy.com/app/matfax/auto-dagger2?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=matfax/auto-dagger2&amp;utm_campaign=Badge_Grade)
+![GitHub License](https://img.shields.io/github/license/matfax/auto-dagger2.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/matfax/auto-dagger2.svg)
+![Libraries.io for GitHub](https://img.shields.io/librariesio/github/matfax/auto-dagger2.svg)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=matfax/auto-dagger2)](https://dependabot.com)
+
 Auto Dagger2 is an annotation processor built on top of the Dagger2 annotation processor.  
 It basically generates the component for you.
 
