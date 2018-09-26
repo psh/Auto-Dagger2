@@ -231,24 +231,13 @@ If you don't provide scope annotation, the generated component will be unscoped.
 Beware that the groupId changed to **com.github.lukaspili.autodagger2**
 
 ```groovy
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-		classpath 'com.android.tools.build:gradle:1.1.3'
-		classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
-    }
-}
-
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
-    apt 'com.github.lukaspili.autodagger2:autodagger2-compiler:1.1'
+    annotationProcessor 'com.github.lukaspili.autodagger2:autodagger2-compiler:1.1'
     compile 'com.github.lukaspili.autodagger2:autodagger2:1.1'
 
-    apt 'com.google.dagger:dagger-compiler:2.0.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.0.1'
     compile 'com.google.dagger:dagger:2.0.1'
     provided 'javax.annotation:javax.annotation-api:1.3.2' // Android only
 }
