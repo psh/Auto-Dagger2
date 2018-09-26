@@ -234,12 +234,12 @@ Beware that the groupId changed to **com.github.lukaspili.autodagger2**
 apply plugin: 'com.android.application'
 
 dependencies {
-    annotationProcessor 'com.github.lukaspili.autodagger2:autodagger2-compiler:1.1'
-    compile 'com.github.lukaspili.autodagger2:autodagger2:1.1'
+    annotationProcessor 'com.github.matfax.auto-dagger2:compiler:1.2.0'
+    implementation 'com.github.matfax.auto-dagger2:library:1.2.0'
 
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.0.1'
-    compile 'com.google.dagger:dagger:2.0.1'
-    provided 'javax.annotation:javax.annotation-api:1.3.2' // Android only
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.17'
+    implementation 'com.google.dagger:dagger:2.17'
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2' // Android only
 }
 ```
 
