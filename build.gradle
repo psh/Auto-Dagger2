@@ -1,21 +1,42 @@
-ext.deps = [
-        dagger2                : 'com.google.dagger:dagger:2.11',
-        dagger2_compiler       : 'com.google.dagger:dagger-compiler:2.11',
-        javax_annotation_jsr250: 'javax.annotation:jsr250-api:1.0',
-        processor_workflow     : 'com.github.lukaspili.processor-workflow:processor-workflow:1.0.3'
-]
-
-subprojects {
-    buildscript {
-        repositories {
-            mavenCentral()
-        }
-    }
-
+buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
+        google()
+        maven { url "https://jitpack.io" }
+        maven { url "http://dl.bintray.com/kotlin/kotlin-eap" }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
-    group = GROUP
-    version = VERSION_NAME
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.0-rc-57"
+        classpath 'com.netflix.nebula:gradle-lint-plugin:10.1.2'
+        classpath "gradle.plugin.com.palantir.gradle.gitversion:gradle-git-version:0.12.0-rc2"
+        classpath "com.gradle:build-scan-plugin:1.16"
+    }
+}
+
+apply plugin: "com.gradle.build-scan"
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://jitpack.io" }
+        maven { url "http://dl.bintray.com/kotlin/kotlin-eap" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    apply plugin: 'nebula.lint'
+    apply plugin: "com.palantir.git-version"
+
+    gradleLint.rules = ['all-dependency']
+
+    group = 'com.github.matfax'
+    version = gitVersion()
+}
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }

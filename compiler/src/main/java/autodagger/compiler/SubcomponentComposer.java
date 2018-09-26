@@ -11,7 +11,6 @@ import java.util.List;
 import javax.annotation.Generated;
 import javax.lang.model.element.Modifier;
 
-import dagger.Component;
 import dagger.Subcomponent;
 import processorworkflow.AbstractComposer;
 

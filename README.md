@@ -242,7 +242,7 @@ dependencies {
 
     apt 'com.google.dagger:dagger-compiler:2.0.1'
     compile 'com.google.dagger:dagger:2.0.1'
-    provided 'javax.annotation:jsr250-api:1.0' // Android only
+    provided 'javax.annotation:javax.annotation-api:1.3.2' // Android only
 }
 ```
 
