@@ -7,6 +7,7 @@ import android.os.Bundle;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 public class ForthActivity extends AbstractActivity {
 
     @Override
