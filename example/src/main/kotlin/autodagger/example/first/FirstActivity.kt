@@ -28,7 +28,6 @@ class FirstActivity : Activity() {
         DaggerFirstActivityComponent.builder()
                 .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
                 .moduleOne(ModuleOne())
-                .moduleTwo(ModuleTwo())
                 .build()
     }
 
@@ -57,7 +56,7 @@ class FirstActivity : Activity() {
         @Provides
         @DaggerScope(FirstActivity::class)
         fun providesMyObject3(): MyObject3<String, String> {
-            return MyObject3<String, String>()
+            return MyObject3()
         }
 
         @Provides
