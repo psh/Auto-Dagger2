@@ -12,6 +12,9 @@ import dagger.Provides
 import javax.inject.Inject
 import javax.inject.Named
 
+/**
+ * Showcase: @AutoComponent
+ */
 @AutoComponent(
         modules = [FirstActivity.ModuleOne::class, FirstActivity.ModuleTwo::class],
         dependencies = [KotlinExampleApplication::class],

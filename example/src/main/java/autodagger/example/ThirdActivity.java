@@ -10,6 +10,7 @@ import autodagger.AutoInjector;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @StandardActivityComponent1
 @AutoInjector
 @DaggerScope(ThirdActivity.class)

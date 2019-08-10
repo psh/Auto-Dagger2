@@ -9,6 +9,7 @@ import dagger.Provides;
 /**
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoComponent(modules = MyApp.Module.class)
 @DaggerScope(MyApp.class)
 public class MyApp extends Application {
