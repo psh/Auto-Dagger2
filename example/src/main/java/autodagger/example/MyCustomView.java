@@ -10,6 +10,7 @@ import autodagger.AutoInjector;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoInjector(FirstActivity.class)
 public class MyCustomView extends LinearLayout {
 
