@@ -11,6 +11,7 @@ import autodagger.AutoSubcomponent;
         superinterfaces = MySubObject2.MyInterface.class,
         subcomponents = MySubObject1.class
 )
+@Deprecated
 @AutoInjector
 @DaggerScope(MySubObject2.class)
 public class MySubObject2 {

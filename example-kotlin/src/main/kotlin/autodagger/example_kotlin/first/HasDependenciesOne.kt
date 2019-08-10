@@ -1,0 +1,3 @@
+package autodagger.example_kotlin.first
+
+interface HasDependenciesOne

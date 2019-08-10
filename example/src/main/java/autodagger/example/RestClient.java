@@ -9,6 +9,7 @@ import autodagger.AutoExpose;
  */
 @AutoExpose(MyApp.class)
 @DaggerScope(MyApp.class)
+@Deprecated
 public class RestClient {
 
     @Inject

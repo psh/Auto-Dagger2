@@ -8,6 +8,7 @@ import autodagger.AutoInjector;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoInjector(value = {FirstActivity.class, SecondActivity.class}, parameterizedTypes = {String.class, String.class})
 @AutoExpose(value = {FirstActivity.class, SecondActivity.class}, parameterizedTypes = {String.class, String.class})
 @DaggerScope(FirstActivity.class)

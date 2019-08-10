@@ -9,6 +9,7 @@ import autodagger.AutoSubcomponent;
 @AutoSubcomponent
 @DaggerScope(MySubObject1.class)
 @AutoInjector
+@Deprecated
 public class MySubObject1 {
 
 }

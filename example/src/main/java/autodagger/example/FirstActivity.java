@@ -17,6 +17,7 @@ import dagger.Provides;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoComponent(
         modules = {FirstActivity.ModuleOne.class, FirstActivity.ModuleTwo.class},
         dependencies = MyApp.class,
@@ -37,7 +38,6 @@ public class FirstActivity extends Activity {
         component = DaggerFirstActivityComponent.builder()
                 .myAppComponent(((MyApp) getApplication()).getComponent())
                 .moduleOne(new ModuleOne())
-                .moduleTwo(new ModuleTwo())
                 .build();
         component.inject(this);
 

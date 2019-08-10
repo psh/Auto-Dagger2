@@ -14,6 +14,7 @@ import dagger.Provides;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoComponent(
         modules = {SecondActivity.ModuleOne.class, SecondActivity.ModuleTwo.class},
         dependencies = SecondActivity.SomeOtherComponent.class,

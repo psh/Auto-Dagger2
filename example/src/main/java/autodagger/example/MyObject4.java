@@ -5,6 +5,7 @@ package autodagger.example;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 public class MyObject4 {
 
 }
