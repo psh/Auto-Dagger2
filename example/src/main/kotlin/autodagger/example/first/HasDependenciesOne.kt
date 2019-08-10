@@ -1,0 +1,3 @@
+package autodagger.example.first
+
+interface HasDependenciesOne

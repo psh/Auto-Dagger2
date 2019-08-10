@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
+<manifest xmlns:tools="http://schemas.android.com/tools"
     package="autodagger.example"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name=".ExampleApplication"
-        android:allowBackup="true"
+        android:name="autodagger.example.KotlinExampleApplication"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name">
+        android:label="@string/app_name"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name">
@@ -16,6 +17,22 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Showcase: @AutoComponent -->
+        <activity android:name=".first.FirstActivity" />
+        <activity android:name=".first.SecondActivity" />
+
+        <!-- Showcase: @AutoComponent from annotation -->
+        <activity android:name=".second.ThirdActivity" />
+
+        <!-- Showcase: extends from base class annotated with @AutoComponent -->
+        <activity android:name=".third.FourthActivity" />
+
+        <!-- Showcase: @AutoComponent from annotation -->
+        <activity android:name=".fourth.FifthActivity" />
+
+        <!-- Showcase: @AutoComponent includes -->
+        <activity android:name=".fifth.SixthActivity" />
     </application>
 
 </manifest>

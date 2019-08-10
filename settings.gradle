@@ -1,5 +1,4 @@
 include ':library',
         ':compiler',
         ':compiler-utils',
-        ':example',
-        ':example-kotlin'
+        ':example'
