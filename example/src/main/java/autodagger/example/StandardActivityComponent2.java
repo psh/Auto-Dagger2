@@ -9,6 +9,7 @@ import autodagger.AutoInjector;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoComponent(
         dependencies = MyApp.class,
         superinterfaces = {HasDependenciesOne.class, HasDependenciesTwo.class},

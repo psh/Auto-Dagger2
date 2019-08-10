@@ -8,6 +8,7 @@ import android.os.Bundle;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @StandardActivityComponent2
 @DaggerScope(FifthActivity.class)
 public class FifthActivity extends Activity {
