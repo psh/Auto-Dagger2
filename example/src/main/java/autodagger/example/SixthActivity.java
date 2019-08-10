@@ -11,6 +11,7 @@ import autodagger.AutoInjector;
  *
  * @author Lukasz Piliszczuk - lukasz.pili@gmail.com
  */
+@Deprecated
 @AutoComponent(
         modules = SixthActivity.Module.class,
         includes = StandardActivityComponent1.class)
