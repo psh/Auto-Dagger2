@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 import com.squareup.javapoet.JavaFile
 

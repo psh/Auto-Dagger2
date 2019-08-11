@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 import javax.lang.model.element.Element
 import javax.lang.model.util.Elements

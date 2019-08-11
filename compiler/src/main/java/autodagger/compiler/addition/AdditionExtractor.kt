@@ -3,9 +3,9 @@ package autodagger.compiler.addition
 import autodagger.AutoExpose
 import autodagger.compiler.utils.findAnnotatedAnnotation
 import com.google.auto.common.MoreElements
-import processorworkflow.AbstractExtractor
-import processorworkflow.Errors
-import processorworkflow.getValueFromAnnotation
+import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import javax.inject.Qualifier
 import javax.lang.model.element.*
 import javax.lang.model.element.ElementKind.METHOD
@@ -78,7 +78,11 @@ class AdditionExtractor(
 
     private fun getTypeMirrors(member: String): MutableList<TypeMirror> {
         val values =
-            getValueFromAnnotation<List<AnnotationValue>>(element, additionAnnotation, member)
+            getValueFromAnnotation<List<AnnotationValue>>(
+                element,
+                additionAnnotation,
+                member
+            )
         if (values == null || values.isEmpty()) {
             return mutableListOf()
         }

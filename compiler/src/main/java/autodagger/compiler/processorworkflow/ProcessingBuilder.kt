@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 abstract class ProcessingBuilder<T_Extractor : AbstractExtractor, T_Model>(
     protected val extractor: T_Extractor,

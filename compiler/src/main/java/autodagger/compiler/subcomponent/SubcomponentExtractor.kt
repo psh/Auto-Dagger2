@@ -8,9 +8,9 @@ import autodagger.compiler.utils.findAnnotatedAnnotation
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
-import processorworkflow.AbstractExtractor
-import processorworkflow.Errors
-import processorworkflow.getValueFromAnnotation
+import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
@@ -46,11 +46,12 @@ class SubcomponentExtractor(element: Element, types: Types, elements: Elements, 
         val addsTo = name == ANNOTATION_SUBCOMPONENTS
 
         val typeMirrors = mutableListOf<TypeMirror>()
-        val values = getValueFromAnnotation<List<AnnotationValue>>(
-            element,
-            AutoSubcomponent::class.java,
-            name
-        )
+        val values =
+            getValueFromAnnotation<List<AnnotationValue>>(
+                element,
+                AutoSubcomponent::class.java,
+                name
+            )
         if (values != null) {
             for (value in values) {
                 if (!validateAnnotationValue(value, name)) {

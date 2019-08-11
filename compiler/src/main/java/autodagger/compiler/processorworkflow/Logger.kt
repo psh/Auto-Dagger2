@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 object Logger {
     private var TAG: String? = null

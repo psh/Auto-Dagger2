@@ -1,7 +1,7 @@
 package autodagger.compiler
 
 import autodagger.compiler.addition.AdditionExtractor
-import processorworkflow.AbstractState
+import autodagger.compiler.processorworkflow.AbstractState
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
 

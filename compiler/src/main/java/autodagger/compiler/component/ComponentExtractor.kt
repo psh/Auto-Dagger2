@@ -6,9 +6,9 @@ import autodagger.compiler.utils.*
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
-import processorworkflow.AbstractExtractor
-import processorworkflow.Errors
-import processorworkflow.getValueFromAnnotation
+import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import java.util.*
 import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
@@ -58,11 +58,12 @@ class ComponentExtractor(
         subcomponentsTypeMirrors = findTypeMirrors(element, ANNOTATION_SUBCOMPONENTS)
 
         var includesExtractor: ComponentExtractor? = null
-        val includesTypeMirror = getValueFromAnnotation<TypeMirror>(
-            element,
-            AutoComponent::class.java,
-            ANNOTATION_INCLUDES
-        )
+        val includesTypeMirror =
+            getValueFromAnnotation<TypeMirror>(
+                element,
+                AutoComponent::class.java,
+                ANNOTATION_INCLUDES
+            )
         if (includesTypeMirror != null) {
             val includesElement = MoreTypes.asElement(includesTypeMirror)
             if (!MoreElements.isAnnotationPresent(includesElement, AutoComponent::class.java)) {
@@ -104,7 +105,11 @@ class ComponentExtractor(
         val addsTo = name == ANNOTATION_SUBCOMPONENTS
         val typeMirrors = ArrayList<TypeMirror>()
         val values =
-            getValueFromAnnotation<List<AnnotationValue>>(element, AutoComponent::class.java, name)
+            getValueFromAnnotation<List<AnnotationValue>>(
+                element,
+                AutoComponent::class.java,
+                name
+            )
         if (values != null) {
             for (value in values) {
                 if (!validateAnnotationValue(value, name)) {

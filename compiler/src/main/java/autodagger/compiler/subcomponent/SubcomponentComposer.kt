@@ -6,7 +6,7 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
 import dagger.Subcomponent
-import processorworkflow.AbstractComposer
+import autodagger.compiler.processorworkflow.AbstractComposer
 import javax.annotation.Generated
 import javax.lang.model.element.Modifier
 

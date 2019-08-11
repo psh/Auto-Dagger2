@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -20,17 +20,6 @@ abstract class AbstractProcessor<T_State> : javax.annotation.processing.Abstract
     private var stop: Boolean = false
     private lateinit var filer: Filer
 
-    private val isInvalid: Boolean
-        get() {
-            if (errors.hasErrors()) {
-                errors.deliver(processingEnv.messager)
-                stop = true
-                return true
-            }
-
-            return false
-        }
-
     @Synchronized
     override fun init(processingEnv: ProcessingEnvironment) {
         super.init(processingEnv)
@@ -49,7 +38,11 @@ abstract class AbstractProcessor<T_State> : javax.annotation.processing.Abstract
                 processing.supportedAnnotations().forEach { annotation ->
                     val elements = roundEnv.getElementsAnnotatedWith(annotation)
                     processing.process(elements, annotation, roundEnv)
-                    if (isInvalid) return false
+                    if (errors.hasErrors()) {
+                        errors.deliver(processingEnv.messager)
+                        stop = true
+                        return false
+                    }
                 }
                 processing.createComposer()?.let { add(it) }
             }

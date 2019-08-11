@@ -6,8 +6,8 @@ import autodagger.compiler.State
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Provides
-import processorworkflow.AbstractProcessing
-import processorworkflow.Errors
+import autodagger.compiler.processorworkflow.AbstractProcessing
+import autodagger.compiler.processorworkflow.Errors
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind.ANNOTATION_TYPE
 import javax.lang.model.element.ElementKind.METHOD

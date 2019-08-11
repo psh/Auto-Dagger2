@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
@@ -8,18 +8,29 @@ class Errors {
     private val list = mutableListOf<Error>()
 
     fun addInvalid(element: Element, reason: String, vararg format: String?) {
-        list.add(Error(element, String.format("Invalid value: %s", String.format(reason, *format))))
+        list.add(
+            Error(
+                element,
+                String.format("Invalid value: %s", String.format(reason, *format))
+            )
+        )
     }
 
     fun addMissing(element: Element, reason: String, vararg format: String?) {
-        list.add(Error(element, String.format("Missing value: %s", String.format(reason, *format))))
+        list.add(
+            Error(
+                element,
+                String.format("Missing value: %s", String.format(reason, *format))
+            )
+        )
     }
 
     fun deliver(messager: Messager) = list.forEach {
         messager.printMessage(Diagnostic.Kind.ERROR, it.text, it.element)
     }
 
-    fun getFor(element: Element): ElementErrors = ElementErrors(this, element)
+    fun getFor(element: Element): ElementErrors =
+        ElementErrors(this, element)
 
     fun hasErrors(): Boolean = list.isNotEmpty()
 

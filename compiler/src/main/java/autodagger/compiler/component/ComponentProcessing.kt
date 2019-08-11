@@ -13,9 +13,9 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.TypeName
-import processorworkflow.AbstractProcessing
-import processorworkflow.Errors
-import processorworkflow.ProcessingBuilder
+import autodagger.compiler.processorworkflow.AbstractProcessing
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.processorworkflow.ProcessingBuilder
 import java.util.*
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind.ANNOTATION_TYPE

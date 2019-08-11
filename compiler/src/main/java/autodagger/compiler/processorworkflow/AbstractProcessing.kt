@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.Element

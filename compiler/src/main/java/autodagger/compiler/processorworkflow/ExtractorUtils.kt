@@ -1,4 +1,4 @@
-package processorworkflow
+package autodagger.compiler.processorworkflow
 
 import com.google.auto.common.MoreElements
 import javax.lang.model.element.AnnotationMirror
@@ -16,7 +16,8 @@ fun <T> getValueFromAnnotation(
         return null
     }
 
-    val annotationValue = getAnnotationValue(annotationMirror.get(), name)
+    val annotationValue =
+        getAnnotationValue(annotationMirror.get(), name)
     return if (annotationValue != null) annotationValue.value as T else null
 }
 
