@@ -1,5 +1,1 @@
-include ':library',
-        ':compiler',
-        ':compiler-utils',
-        ':example',
-        ':processor-workflow'
+include ':library', ':compiler', ':example', ':processor-workflow'

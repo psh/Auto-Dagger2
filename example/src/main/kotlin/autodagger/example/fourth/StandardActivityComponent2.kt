@@ -12,9 +12,9 @@ import autodagger.example.second.StandardModule
  * here
  */
 @AutoComponent(
-        dependencies = [KotlinExampleApplication::class],
-        superinterfaces = [HasDependenciesOne::class, HasDependenciesTwo::class],
-        modules = [StandardModule::class]
+    dependencies = [KotlinExampleApplication::class],
+    superinterfaces = [HasDependenciesOne::class, HasDependenciesTwo::class],
+    modules = [StandardModule::class]
 )
 @AutoInjector
 annotation class StandardActivityComponent2

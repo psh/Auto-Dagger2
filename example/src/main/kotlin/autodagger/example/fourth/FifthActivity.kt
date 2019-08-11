@@ -14,8 +14,8 @@ class FifthActivity : Activity() {
 
     private val component: FifthActivityComponent by lazy {
         DaggerFifthActivityComponent.builder()
-                .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
-                .build()
+            .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
+            .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

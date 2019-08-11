@@ -16,19 +16,20 @@ import javax.inject.Named
  * Showcase: @AutoComponent
  */
 @AutoComponent(
-        modules = [FirstActivity.ModuleOne::class, FirstActivity.ModuleTwo::class],
-        dependencies = [KotlinExampleApplication::class],
-        superinterfaces = [HasDependenciesOne::class, HasDependenciesTwo::class],
-        subcomponents = [MySubObject1::class, MySubObject2::class, MyManualSubcomponent::class])
+    modules = [FirstActivity.ModuleOne::class, FirstActivity.ModuleTwo::class],
+    dependencies = [KotlinExampleApplication::class],
+    superinterfaces = [HasDependenciesOne::class, HasDependenciesTwo::class],
+    subcomponents = [MySubObject1::class, MySubObject2::class, MyManualSubcomponent::class]
+)
 @AutoInjector
 @DaggerScope(FirstActivity::class)
 class FirstActivity : Activity() {
 
     private val component: FirstActivityComponent by lazy {
         DaggerFirstActivityComponent.builder()
-                .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
-                .moduleOne(ModuleOne())
-                .build()
+            .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
+            .moduleOne(ModuleOne())
+            .build()
     }
 
     var mySubObject1: MySubObject1? = null
@@ -40,8 +41,8 @@ class FirstActivity : Activity() {
         component.inject(this)
 
         component.plusMySubObject2Component(MySubObject2.Module(""), MySubObject2.ModuleTwo())
-                .plusMySubObject1Component()
-                .inject(mySubObject1)
+            .plusMySubObject1Component()
+            .inject(mySubObject1)
     }
 
     @Module

@@ -5,9 +5,9 @@ import autodagger.AutoSubcomponent
 import autodagger.example.DaggerScope
 
 @AutoSubcomponent(
-        modules = [MySubObject2.Module::class, MySubObject2.ModuleTwo::class],
-        superinterfaces = [MySubObject2.MyInterface::class],
-        subcomponents = [MySubObject1::class]
+    modules = [MySubObject2.Module::class, MySubObject2.ModuleTwo::class],
+    superinterfaces = [MySubObject2.MyInterface::class],
+    subcomponents = [MySubObject1::class]
 )
 @AutoInjector
 @DaggerScope(MySubObject2::class)

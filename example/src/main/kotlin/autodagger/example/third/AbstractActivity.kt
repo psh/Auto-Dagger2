@@ -18,8 +18,8 @@ abstract class AbstractActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         component = DaggerAbstractActivityComponent.builder()
-                .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
-                .build()
+            .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
+            .build()
         component.inject(this)
     }
 }

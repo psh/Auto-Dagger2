@@ -13,8 +13,8 @@ class FourthActivity : AbstractActivity() {
 
         // do this here, or in the base class
         component = DaggerAbstractActivityComponent.builder()
-                .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
-                .build()
+            .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
+            .build()
         component.inject(this)
     }
 }

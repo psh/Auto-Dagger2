@@ -16,8 +16,8 @@ class ThirdActivity : Activity() {
 
     private val component: ThirdActivityComponent by lazy {
         DaggerThirdActivityComponent.builder()
-                .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
-                .build()
+            .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
+            .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

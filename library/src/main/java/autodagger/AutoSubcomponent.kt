@@ -6,10 +6,10 @@ import kotlin.reflect.KClass
 
 @Target(CLASS, FILE)
 annotation class AutoSubcomponent(
-        val modules: Array<KClass<*>> = [],
-        val superinterfaces: Array<KClass<*>> = [],
-        /**
-         * Subcomponents to be declared inside this component
-         */
-        val subcomponents: Array<KClass<*>> = []
+    val modules: Array<KClass<*>> = [],
+    val superinterfaces: Array<KClass<*>> = [],
+    /**
+     * Subcomponents to be declared inside this component
+     */
+    val subcomponents: Array<KClass<*>> = []
 )

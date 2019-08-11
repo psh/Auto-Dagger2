@@ -12,8 +12,8 @@ import autodagger.example.second.StandardActivityComponent1
  * Showcase: @AutoComponent includes
  */
 @AutoComponent(
-        modules = [SixthActivity.Module::class],
-        includes = StandardActivityComponent1::class
+    modules = [SixthActivity.Module::class],
+    includes = StandardActivityComponent1::class
 )
 @DaggerScope(SixthActivity::class)
 @AutoInjector
@@ -21,8 +21,8 @@ class SixthActivity : Activity() {
 
     private val component: SixthActivityComponent by lazy {
         DaggerSixthActivityComponent.builder()
-                .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
-                .build()
+            .kotlinExampleApplicationComponent((application as KotlinExampleApplication).component)
+            .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
