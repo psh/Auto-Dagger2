@@ -52,7 +52,6 @@ On the component, you can add dependencies, modules and superinterfaces.
     dependencies = [ExampleApplication::class],
     superinterfaces = [ExampleApplication::class, GlobalComponent::class],
 )
-@Singleton
 class MainActivity : Activity() {
 }
 ```
@@ -64,7 +63,6 @@ It generates `MainActivityComponent`
     dependencies = ExampleApplicationComponent.class,
     modules = MainActivity.Module.class
 )
-@Singleton
 public interface MainActivityComponent extends ExampleApplicationComponent, GlobalComponent {
 }
 ```
@@ -87,7 +85,6 @@ It updates the `MainActivityComponent` by adding the following method:
     dependencies = ExampleApplicationComponent.class,
     modules = MainActivity.Module.class
 )
-@Singleton
 public interface MainActivityComponent extends ExampleApplicationComponent, GlobalComponent {
   void inject(ObjectA objectA);
 }
@@ -102,7 +99,6 @@ If you apply the `@AutoInjector` on the same class that has the `@AutoComponent`
     dependencies = [ExampleApplication::class],
     superinterfaces = [ExampleApplication::class, GlobalComponent::class],
 )
-@Singleton
 class MainActivity : Activity() {
 }
 ```
@@ -135,7 +131,6 @@ It updates the `MainActivityComponent` by adding the following method:
     dependencies = ExampleApplicationComponent.class,
     modules = MainActivity.Module.class
 )
-@Singleton
 public interface MainActivityComponent extends ExampleApplicationComponent, GlobalComponent {
   SomeObject someObject();
 }
@@ -151,7 +146,6 @@ If you apply the `@AutoExpose` on the same class that has the `@AutoComponent` a
     superinterfaces = [ExampleApplication::class, GlobalComponent::class],
 )
 @AutoExpose
-@Singleton
 class MainActivity : Activity() {
 }
 ```
@@ -172,7 +166,6 @@ If your class have parameterized type, you can also specify it:
 
 ```java
 @AutoExpose(value = MainActivity.class, parameterizedTypes = {String.class, String.class})
-@Singleton
 public class MyObject3<T, E> {
     private T t;
     private E e;
@@ -204,7 +197,6 @@ It will adds to the already defined dependencies, modules and superinterfaces.
 @AutoComponent(
         modules = SixthActivity.Module.class,
         includes = StandardActivityComponent.class)
-@Singleton
 public class SixthActivity extends Activity { }
 ```
 
@@ -212,15 +204,15 @@ You can also directly annotate the class:
 
 ```java
 @StandardActivityComponent
-@Singleton
 public class SixthActivity extends Activity { }
 ```
 
 
 ## Scope
 
-Whenever you use `@AutoComponent`, you also need to annotate the class with a dagger scope annotation (an annotation that is itself annotated with `@Scope`).
-Auto Dagger2 will detect this annotation, and will apply it on the generated component.
+Whenever you use `@AutoComponent`, you also need to annotate the class with a dagger scope 
+annotation (an annotation that is itself annotated with `@Scope`).  Auto Dagger2 will detect 
+this annotation, and will apply it on the generated component.
 
 If you don't provide scope annotation, the generated component will be unscoped.
 
@@ -233,28 +225,22 @@ Beware that the groupId changed to **com.github.lukaspili.autodagger2**
 apply plugin: 'com.android.application'
 
 dependencies {
-    annotationProcessor 'com.github.matfax.auto-dagger2:compiler:1.2.0'
+    kapt 'com.github.matfax.auto-dagger2:compiler:1.2.0'
     implementation 'com.github.matfax.auto-dagger2:library:1.2.0'
 
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.17'
-    implementation 'com.google.dagger:dagger:2.17'
+    kapt 'com.google.dagger:dagger-compiler:2.24'
+    implementation 'com.google.dagger:dagger:2.24'
     compileOnly 'javax.annotation:javax.annotation-api:1.3.2' // Android only
 }
 ```
 
 
-## Status
+## History
 
-Stable API.  
+Auto Dagger2 was originally extracted from Auto Mortar to work as a standalone library by 
+Lukasz Piliszczuk ([@lukaspili](https://twitter.com/lukaspili))
 
-Auto Dagger2 was extracted from Auto Mortar to work as a standalone library.  
-You can find more about Auto Mortar here:
-[https://github.com/lukaspili/Auto-Mortar](https://github.com/lukaspili/Auto-Mortar)
-
-
-## Author
-
-- Lukasz Piliszczuk ([@lukaspili](https://twitter.com/lukaspili))
+Subsequently ported to Kotlin and brought up-to-date by Paul Hawke ([@psh](https://twitter.com/psh))
 
 
 ## License
