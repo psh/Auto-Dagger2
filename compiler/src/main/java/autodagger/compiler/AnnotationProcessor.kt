@@ -5,7 +5,7 @@ import autodagger.compiler.addition.AdditionProcessing
 import autodagger.compiler.component.ComponentProcessing
 import autodagger.compiler.subcomponent.SubcomponentProcessing
 import autodagger.compiler.processorworkflow.AbstractProcessing
-import autodagger.compiler.processorworkflow.AbstractProcessor
+import autodagger.compiler.processorworkflow.AbstractAnnotationProcessor
 import autodagger.compiler.processorworkflow.Logger
 import javax.annotation.processing.SupportedOptions
 import javax.annotation.processing.SupportedSourceVersion
@@ -13,7 +13,7 @@ import javax.lang.model.SourceVersion
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions(KAPT_KOTLIN_GENERATED_OPTION_NAME)
-class AnnotationProcessor : AbstractProcessor<State>() {
+class AnnotationProcessor : AbstractAnnotationProcessor<State>() {
     companion object {
         const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
     }

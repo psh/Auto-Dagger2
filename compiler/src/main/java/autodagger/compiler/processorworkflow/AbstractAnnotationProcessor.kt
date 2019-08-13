@@ -2,6 +2,7 @@ package autodagger.compiler.processorworkflow
 
 import java.io.PrintWriter
 import java.io.StringWriter
+import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Filer
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
@@ -10,7 +11,7 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
-abstract class AbstractProcessor<T_State> : javax.annotation.processing.AbstractProcessor() {
+abstract class AbstractAnnotationProcessor<T_State> : AbstractProcessor() {
 
     abstract val state: T_State
     abstract val processings: List<AbstractProcessing<*, *>>
