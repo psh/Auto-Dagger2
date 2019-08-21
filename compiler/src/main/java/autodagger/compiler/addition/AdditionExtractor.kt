@@ -1,14 +1,17 @@
 package autodagger.compiler.addition
 
 import autodagger.AutoExpose
-import autodagger.compiler.utils.findAnnotatedAnnotation
-import com.google.auto.common.MoreElements
 import autodagger.compiler.processorworkflow.AbstractExtractor
 import autodagger.compiler.processorworkflow.Errors
 import autodagger.compiler.processorworkflow.getValueFromAnnotation
+import autodagger.compiler.utils.findAnnotatedAnnotation
+import com.google.auto.common.MoreElements
 import javax.inject.Qualifier
-import javax.lang.model.element.*
+import javax.lang.model.element.AnnotationMirror
+import javax.lang.model.element.AnnotationValue
+import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind.METHOD
+import javax.lang.model.element.TypeElement
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
@@ -20,7 +23,7 @@ class AdditionExtractor(
     types: Types,
     elements: Elements,
     errors: Errors
-) : AbstractExtractor(element, types, elements, errors) {
+) : AbstractExtractor<AdditionExtractor, AdditionSpec>(element, types, elements, errors) {
 
     /**
      * The addition element represented by @AutoInjector or @AutoExpose

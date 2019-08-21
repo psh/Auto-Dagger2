@@ -2,13 +2,14 @@ package autodagger.compiler.component
 
 import autodagger.AutoComponent
 import autodagger.AutoSubcomponent
+import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.processorworkflow.ProcessingBuilder
+import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
-import autodagger.compiler.processorworkflow.AbstractExtractor
-import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import java.util.*
 import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
@@ -29,7 +30,7 @@ class ComponentExtractor(
     types: Types,
     elements: Elements,
     errors: Errors
-) : AbstractExtractor(element, types, elements, errors) {
+) : AbstractExtractor<ComponentExtractor, ComponentSpec>(element, types, elements, errors) {
 
     var targetTypeMirror: TypeMirror? = null
     var scopeAnnotationTypeMirror: AnnotationMirror? = null
@@ -40,6 +41,10 @@ class ComponentExtractor(
 
     init {
         extract()
+    }
+
+    override fun createBuilder(errors: Errors): ProcessingBuilder<ComponentExtractor, ComponentSpec>? {
+        return ComponentSpecBuilder(this, errors)
     }
 
     override fun extract() {

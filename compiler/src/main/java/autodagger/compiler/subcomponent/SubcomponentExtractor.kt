@@ -1,6 +1,10 @@
 package autodagger.compiler.subcomponent
 
 import autodagger.AutoSubcomponent
+import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.processorworkflow.ProcessingBuilder
+import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import autodagger.compiler.utils.ANNOTATION_MODULES
 import autodagger.compiler.utils.ANNOTATION_SUBCOMPONENTS
 import autodagger.compiler.utils.ANNOTATION_SUPERINTERFACES
@@ -8,9 +12,6 @@ import autodagger.compiler.utils.findAnnotatedAnnotation
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
-import autodagger.compiler.processorworkflow.AbstractExtractor
-import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
@@ -20,7 +21,7 @@ import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
 class SubcomponentExtractor(element: Element, types: Types, elements: Elements, errors: Errors) :
-    AbstractExtractor(element, types, elements, errors) {
+    AbstractExtractor<SubcomponentExtractor, SubcomponentSpec>(element, types, elements, errors) {
 
     var modulesTypeMirrors = mutableListOf<TypeMirror>()
     var superinterfacesTypeMirrors = mutableListOf<TypeMirror>()
@@ -29,6 +30,10 @@ class SubcomponentExtractor(element: Element, types: Types, elements: Elements, 
 
     init {
         extract()
+    }
+
+    override fun createBuilder(errors: Errors): ProcessingBuilder<SubcomponentExtractor, SubcomponentSpec>? {
+        return SubcomponentSpecBuilder(this, errors)
     }
 
     override fun extract() {

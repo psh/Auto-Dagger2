@@ -1,13 +1,12 @@
 package autodagger.compiler.addition
 
-import autodagger.AutoExpose
 import autodagger.AutoInjector
 import autodagger.compiler.State
+import autodagger.compiler.processorworkflow.AbstractProcessing
+import autodagger.compiler.processorworkflow.Errors
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Provides
-import autodagger.compiler.processorworkflow.AbstractProcessing
-import autodagger.compiler.processorworkflow.Errors
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind.ANNOTATION_TYPE
 import javax.lang.model.element.ElementKind.METHOD
@@ -15,10 +14,7 @@ import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
 class AdditionProcessing(elements: Elements, types: Types, errors: Errors, state: State) :
-    AbstractProcessing<AdditionSpec, State>(elements, types, errors, state) {
-
-    override fun supportedAnnotations() =
-        setOf(AutoInjector::class.java, AutoExpose::class.java)
+    AbstractProcessing<AdditionSpec, AdditionExtractor>(elements, types, errors, state) {
 
     override fun processElement(element: Element, elementErrors: Errors.ElementErrors): Boolean {
         // @AutoX applied on annotation

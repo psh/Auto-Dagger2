@@ -1,11 +1,10 @@
 package autodagger.compiler
 
 import autodagger.compiler.addition.AdditionExtractor
-import autodagger.compiler.processorworkflow.AbstractState
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
 
-class State : AbstractState() {
+class State {
 
     val injectorExtractors = mutableMapOf<Element, AdditionExtractor>()
     val exposeExtractors = mutableMapOf<Element, AdditionExtractor>()
