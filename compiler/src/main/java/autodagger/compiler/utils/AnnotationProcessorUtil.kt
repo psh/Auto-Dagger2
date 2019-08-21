@@ -8,7 +8,6 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
-import java.util.*
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -28,7 +27,7 @@ fun areTypesEqual(typeMirror1: TypeMirror?, typeMirror2: TypeMirror?) =
     ).qualifiedName
 
 fun getTypeNames(typeMirrors: List<TypeMirror>?): List<TypeName> {
-    val typeNames = ArrayList<TypeName>()
+    val typeNames = mutableListOf<TypeName>()
     if (typeMirrors == null) {
         return typeNames
     }
@@ -44,7 +43,7 @@ fun getAdditions(
     elementTypeMirror: TypeMirror?,
     extractors: List<AdditionExtractor>
 ): List<AdditionSpec> {
-    val specs = ArrayList<AdditionSpec>()
+    val specs = mutableListOf<AdditionSpec>()
 
     // for each additions
     for (additionExtractor in extractors) {
@@ -110,15 +109,11 @@ fun findAnnotatedAnnotation(
     element: Element,
     annotationCls: Class<out Annotation>
 ): List<AnnotationMirror> {
-    val annotationMirrors = ArrayList<AnnotationMirror>()
+    val annotationMirrors = mutableListOf<AnnotationMirror>()
 
     for (annotationMirror in element.annotationMirrors) {
         val annotationElement = annotationMirror.annotationType.asElement()
-        if (MoreElements.isAnnotationPresent(
-                annotationElement,
-                annotationCls
-            )
-        ) {
+        if (MoreElements.isAnnotationPresent(annotationElement, annotationCls)) {
             annotationMirrors.add(annotationMirror)
         }
     }

@@ -10,7 +10,6 @@ import autodagger.compiler.utils.*
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
-import java.util.*
 import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
@@ -108,7 +107,7 @@ class ComponentExtractor(
 
     private fun findTypeMirrors(element: Element, name: String): MutableList<TypeMirror> {
         val addsTo = name == ANNOTATION_SUBCOMPONENTS
-        val typeMirrors = ArrayList<TypeMirror>()
+        val typeMirrors = mutableListOf<TypeMirror>()
         val values =
             getValueFromAnnotation<List<AnnotationValue>>(
                 element,

@@ -14,7 +14,6 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.TypeName
-import java.util.*
 import javax.lang.model.element.Modifier
 import javax.lang.model.type.TypeMirror
 
@@ -49,8 +48,7 @@ class ComponentSpecBuilder(extractor: ComponentExtractor, errors: Errors) :
             return emptyList()
         }
 
-        val methodSpecs =
-            ArrayList<MethodSpec>(extractor.subcomponentsTypeMirrors.size)
+        val methodSpecs = mutableListOf<MethodSpec>()
         for (typeMirror in extractor.subcomponentsTypeMirrors) {
             val e = MoreTypes.asElement(typeMirror)
             val typeName: TypeName
@@ -130,7 +128,7 @@ class ComponentSpecBuilder(extractor: ComponentExtractor, errors: Errors) :
         superinterfaces: List<TypeMirror>?,
         extractors: Set<ComponentExtractor>
     ): List<TypeName> {
-        val typeNames = ArrayList<TypeName>()
+        val typeNames = mutableListOf<TypeName>()
         if (superinterfaces == null) {
             return typeNames
         }
@@ -144,11 +142,7 @@ class ComponentSpecBuilder(extractor: ComponentExtractor, errors: Errors) :
                     continue
                 }
 
-                if (areTypesEqual(
-                        componentExtractor.targetTypeMirror,
-                        typeMirror
-                    )
-                ) {
+                if (areTypesEqual(componentExtractor.targetTypeMirror, typeMirror)) {
                     typeNames.add(componentExtractor.componentElement.getComponentClassName())
                     continue@mainLoop
                 }
