@@ -29,10 +29,11 @@ class ComponentProcessing(elements: Elements, types: Types, errors: Errors, stat
         }
 
         val extractor = ComponentExtractor(element, element, this.types, this.elements, this.errors)
-        if (!this.errors.hasErrors()) {
+        val success = !this.errors.hasErrors()
+        if (success) {
             this.extractors.add(extractor)
         }
 
-        return !errors.hasErrors()
+        return success
     }
 }

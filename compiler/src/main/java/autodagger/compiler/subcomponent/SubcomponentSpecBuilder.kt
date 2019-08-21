@@ -3,7 +3,7 @@ package autodagger.compiler.subcomponent
 import autodagger.AutoSubcomponent
 import autodagger.compiler.State
 import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.ProcessingBuilder
+import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
 import autodagger.compiler.utils.getAdditions
 import autodagger.compiler.utils.getComponentClassName
 import autodagger.compiler.utils.getTypeNames
@@ -16,7 +16,7 @@ import com.squareup.javapoet.TypeName
 import javax.lang.model.element.Modifier
 
 class SubcomponentSpecBuilder(extractor: SubcomponentExtractor, errors: Errors) :
-    ProcessingBuilder<SubcomponentExtractor, SubcomponentSpec>(extractor, errors) {
+    AbstractProcessingBuilder<SubcomponentExtractor, SubcomponentSpec>(extractor, errors) {
 
     override fun build(state: State, extractors: Set<SubcomponentExtractor>) =
         SubcomponentSpec(

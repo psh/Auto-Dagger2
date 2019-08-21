@@ -81,11 +81,8 @@ class AdditionExtractor(
 
     private fun getTypeMirrors(member: String): MutableList<TypeMirror> {
         val values =
-            getValueFromAnnotation<List<AnnotationValue>>(
-                element,
-                additionAnnotation,
-                member
-            )
+            getValueFromAnnotation<List<AnnotationValue>>(element, additionAnnotation, member)
+
         if (values == null || values.isEmpty()) {
             return mutableListOf()
         }

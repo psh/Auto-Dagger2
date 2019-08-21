@@ -16,9 +16,7 @@ fun <T> getValueFromAnnotation(
         return null
     }
 
-    val annotationValue =
-        getAnnotationValue(annotationMirror.get(), name)
-    return if (annotationValue != null) annotationValue.value as T else null
+    return getAnnotationValue(annotationMirror.get(), name)?.value as T
 }
 
 private fun getAnnotationValue(annotationMirror: AnnotationMirror, key: String): AnnotationValue? {

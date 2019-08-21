@@ -60,8 +60,11 @@ class AdditionProcessing(elements: Elements, types: Types, errors: Errors, state
     }
 
     private fun process(targetElement: Element, element: Element): Boolean {
-        val extractor =
-            AdditionExtractor(targetElement, processedAnnotation, element, types, elements, errors)
+        val extractor = AdditionExtractor(
+            targetElement, processedAnnotation,
+            element, types, elements, errors
+        )
+
         if (errors.hasErrors()) {
             return false
         }

@@ -3,8 +3,8 @@ package autodagger.compiler.component
 import autodagger.AutoComponent
 import autodagger.AutoSubcomponent
 import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
 import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.ProcessingBuilder
 import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreElements
@@ -42,7 +42,7 @@ class ComponentExtractor(
         extract()
     }
 
-    override fun createBuilder(errors: Errors): ProcessingBuilder<ComponentExtractor, ComponentSpec>? {
+    override fun createBuilder(errors: Errors): AbstractProcessingBuilder<ComponentExtractor, ComponentSpec>? {
         return ComponentSpecBuilder(this, errors)
     }
 
@@ -51,10 +51,7 @@ class ComponentExtractor(
             element,
             AutoComponent::class.java,
             ANNOTATION_TARGET
-        )
-        if (targetTypeMirror == null) {
-            targetTypeMirror = componentElement.asType()
-        }
+        ) ?: componentElement.asType()
 
         dependenciesTypeMirrors = findTypeMirrors(element, ANNOTATION_DEPENDENCIES)
         modulesTypeMirrors = findTypeMirrors(element, ANNOTATION_MODULES)
@@ -62,14 +59,12 @@ class ComponentExtractor(
         subcomponentsTypeMirrors = findTypeMirrors(element, ANNOTATION_SUBCOMPONENTS)
 
         var includesExtractor: ComponentExtractor? = null
-        val includesTypeMirror =
-            getValueFromAnnotation<TypeMirror>(
-                element,
-                AutoComponent::class.java,
-                ANNOTATION_INCLUDES
-            )
-        if (includesTypeMirror != null) {
-            val includesElement = MoreTypes.asElement(includesTypeMirror)
+        getValueFromAnnotation<TypeMirror>(
+            element,
+            AutoComponent::class.java,
+            ANNOTATION_INCLUDES
+        )?.let {
+            val includesElement = MoreTypes.asElement(it)
             if (!MoreElements.isAnnotationPresent(includesElement, AutoComponent::class.java)) {
                 errors.parent.addInvalid(
                     includesElement,
@@ -95,57 +90,53 @@ class ComponentExtractor(
             }
         }
 
-        if (includesExtractor != null) {
-            dependenciesTypeMirrors.addAll(includesExtractor.dependenciesTypeMirrors)
-            modulesTypeMirrors.addAll(includesExtractor.modulesTypeMirrors)
-            superinterfacesTypeMirrors.addAll(includesExtractor.superinterfacesTypeMirrors)
-            subcomponentsTypeMirrors.addAll(includesExtractor.subcomponentsTypeMirrors)
+        includesExtractor?.let {
+            dependenciesTypeMirrors.addAll(it.dependenciesTypeMirrors)
+            modulesTypeMirrors.addAll(it.modulesTypeMirrors)
+            superinterfacesTypeMirrors.addAll(it.superinterfacesTypeMirrors)
+            subcomponentsTypeMirrors.addAll(it.subcomponentsTypeMirrors)
         }
 
         scopeAnnotationTypeMirror = findScope()
     }
 
     private fun findTypeMirrors(element: Element, name: String): MutableList<TypeMirror> {
-        val addsTo = name == ANNOTATION_SUBCOMPONENTS
-        val typeMirrors = mutableListOf<TypeMirror>()
-        val values =
+        return mutableListOf<TypeMirror>().apply {
+            val addsTo = name == ANNOTATION_SUBCOMPONENTS
             getValueFromAnnotation<List<AnnotationValue>>(
-                element,
-                AutoComponent::class.java,
-                name
-            )
-        if (values != null) {
-            for (value in values) {
-                if (!validateAnnotationValue(value, name)) {
-                    continue
-                }
-
-                try {
-                    val tm = value.value as TypeMirror
-                    if (addsTo) {
-                        val e = MoreTypes.asElement(tm)
-                        if (!MoreElements.isAnnotationPresent(
-                                e,
-                                AutoSubcomponent::class.java
-                            ) && !MoreElements.isAnnotationPresent(e, Subcomponent::class.java)
-                        ) {
-                            errors.addInvalid(
-                                "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",
-                                e.simpleName.toString()
-                            )
-                            continue
-                        }
+                element, AutoComponent::class.java, name
+            )?.let {
+                for (value in it) {
+                    if (!validateAnnotationValue(value, name)) {
+                        continue
                     }
-                    typeMirrors.add(tm)
-                } catch (e: Exception) {
-                    errors.addInvalid(e.message ?: e.javaClass.simpleName)
-                    break
-                }
 
+                    try {
+                        val tm = value.value as TypeMirror
+                        if (addsTo) {
+                            val e = MoreTypes.asElement(tm)
+                            if (!MoreElements.isAnnotationPresent(
+                                    e,
+                                    AutoSubcomponent::class.java
+                                ) &&
+                                !MoreElements.isAnnotationPresent(e, Subcomponent::class.java)
+                            ) {
+                                errors.addInvalid(
+                                    "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",
+                                    e.simpleName.toString()
+                                )
+                                continue
+                            }
+                        }
+                        add(tm)
+                    } catch (e: Exception) {
+                        errors.addInvalid(e.message ?: e.javaClass.simpleName)
+                        break
+                    }
+
+                }
             }
         }
-
-        return typeMirrors
     }
 
     /**

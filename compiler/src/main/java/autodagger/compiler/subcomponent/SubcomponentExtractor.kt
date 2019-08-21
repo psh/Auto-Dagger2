@@ -2,8 +2,8 @@ package autodagger.compiler.subcomponent
 
 import autodagger.AutoSubcomponent
 import autodagger.compiler.processorworkflow.AbstractExtractor
+import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
 import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.ProcessingBuilder
 import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import autodagger.compiler.utils.ANNOTATION_MODULES
 import autodagger.compiler.utils.ANNOTATION_SUBCOMPONENTS
@@ -20,19 +20,22 @@ import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
-class SubcomponentExtractor(element: Element, types: Types, elements: Elements, errors: Errors) :
-    AbstractExtractor<SubcomponentExtractor, SubcomponentSpec>(element, types, elements, errors) {
-
-    var modulesTypeMirrors = mutableListOf<TypeMirror>()
-    var superinterfacesTypeMirrors = mutableListOf<TypeMirror>()
-    var subcomponentsTypeMirrors = mutableListOf<TypeMirror>()
+class SubcomponentExtractor(
+    element: Element,
+    types: Types,
+    elements: Elements,
+    errors: Errors,
+    var modulesTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
+    var superinterfacesTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
+    var subcomponentsTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
     var scopeAnnotationTypeMirror: AnnotationMirror? = null
+) : AbstractExtractor<SubcomponentExtractor, SubcomponentSpec>(element, types, elements, errors) {
 
     init {
         extract()
     }
 
-    override fun createBuilder(errors: Errors): ProcessingBuilder<SubcomponentExtractor, SubcomponentSpec>? {
+    override fun createBuilder(errors: Errors): AbstractProcessingBuilder<SubcomponentExtractor, SubcomponentSpec>? {
         return SubcomponentSpecBuilder(this, errors)
     }
 
@@ -47,49 +50,44 @@ class SubcomponentExtractor(element: Element, types: Types, elements: Elements, 
         scopeAnnotationTypeMirror = findScope()
     }
 
-    private fun findTypeMirrors(element: Element, name: String): MutableList<TypeMirror> {
-        val addsTo = name == ANNOTATION_SUBCOMPONENTS
-
-        val typeMirrors = mutableListOf<TypeMirror>()
-        val values =
+    private fun findTypeMirrors(element: Element, name: String) =
+        mutableListOf<TypeMirror>().apply {
             getValueFromAnnotation<List<AnnotationValue>>(
                 element,
                 AutoSubcomponent::class.java,
                 name
-            )
-        if (values != null) {
-            for (value in values) {
-                if (!validateAnnotationValue(value, name)) {
-                    continue
-                }
-
-                try {
-                    val tm = value.value as TypeMirror
-                    if (addsTo) {
-                        val e = MoreTypes.asElement(tm)
-                        if (!MoreElements.isAnnotationPresent(
-                                e,
-                                AutoSubcomponent::class.java
-                            ) && !MoreElements.isAnnotationPresent(e, Subcomponent::class.java)
-                        ) {
-                            errors.addInvalid(
-                                "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",
-                                e.simpleName.toString()
-                            )
-                            continue
-                        }
+            )?.let {
+                val addsTo = name == ANNOTATION_SUBCOMPONENTS
+                for (value in it) {
+                    if (!validateAnnotationValue(value, name)) {
+                        continue
                     }
-                    typeMirrors.add(tm)
-                } catch (e: Exception) {
-                    errors.addInvalid(e.message ?: e.javaClass.simpleName)
-                    break
-                }
 
+                    try {
+                        val tm = value.value as TypeMirror
+                        if (addsTo) {
+                            val e = MoreTypes.asElement(tm)
+                            if (!MoreElements.isAnnotationPresent(
+                                    e,
+                                    AutoSubcomponent::class.java
+                                ) && !MoreElements.isAnnotationPresent(e, Subcomponent::class.java)
+                            ) {
+                                errors.addInvalid(
+                                    "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",
+                                    e.simpleName.toString()
+                                )
+                                continue
+                            }
+                        }
+                        add(tm)
+                    } catch (e: Exception) {
+                        errors.addInvalid(e.message ?: e.javaClass.simpleName)
+                        break
+                    }
+
+                }
             }
         }
-
-        return typeMirrors
-    }
 
     /**
      * Find annotation that is itself annoted with @Scope

@@ -9,11 +9,10 @@ abstract class AbstractExtractor<T_Ext : AbstractExtractor<T_Ext, T_Model>, T_Mo
     val element: Element,
     protected val types: Types,
     protected val elements: Elements,
-    errors: Errors
+    globalErrors: Errors,
+    protected val errors: ElementErrors = ElementErrors(globalErrors, element)
 ) {
-    protected val errors = ElementErrors(errors, element)
+    open fun createBuilder(errors: Errors): AbstractProcessingBuilder<T_Ext, T_Model>? = null
 
     abstract fun extract()
-
-    open fun createBuilder(errors: Errors): ProcessingBuilder<T_Ext, T_Model>? = null
 }

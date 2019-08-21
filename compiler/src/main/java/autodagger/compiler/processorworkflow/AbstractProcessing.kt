@@ -2,7 +2,6 @@ package autodagger.compiler.processorworkflow
 
 import autodagger.compiler.State
 import autodagger.compiler.processorworkflow.Errors.ElementErrors
-import java.util.*
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.util.Elements
@@ -12,12 +11,12 @@ abstract class AbstractProcessing<T_Model, T_Ext : AbstractExtractor<T_Ext, T_Mo
     protected val elements: Elements,
     protected val types: Types,
     protected val errors: Errors,
-    protected val state: State
-) {
+    protected val state: State,
+    protected val extractors: MutableSet<T_Ext> = mutableSetOf(),
     val specs: MutableList<T_Model> = mutableListOf()
+) {
     protected lateinit var processedAnnotation: Class<out Annotation>
     protected lateinit var roundEnvironment: RoundEnvironment
-    protected val extractors = HashSet<T_Ext>()
 
     fun process(
         annotationElements: Set<Element>,
@@ -49,5 +48,5 @@ abstract class AbstractProcessing<T_Model, T_Ext : AbstractExtractor<T_Ext, T_Mo
      * @return true if element processed with success, false otherwise and it will stop
      * the processing
      */
-    abstract fun processElement(element: Element, elementErrors: Errors.ElementErrors): Boolean
+    abstract fun processElement(element: Element, elementErrors: ElementErrors): Boolean
 }

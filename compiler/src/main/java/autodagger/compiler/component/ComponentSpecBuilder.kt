@@ -3,7 +3,7 @@ package autodagger.compiler.component
 import autodagger.AutoSubcomponent
 import autodagger.compiler.State
 import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.ProcessingBuilder
+import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
 import autodagger.compiler.utils.areTypesEqual
 import autodagger.compiler.utils.getAdditions
 import autodagger.compiler.utils.getComponentClassName
@@ -18,7 +18,7 @@ import javax.lang.model.element.Modifier
 import javax.lang.model.type.TypeMirror
 
 class ComponentSpecBuilder(extractor: ComponentExtractor, errors: Errors) :
-    ProcessingBuilder<ComponentExtractor, ComponentSpec>(extractor, errors) {
+    AbstractProcessingBuilder<ComponentExtractor, ComponentSpec>(extractor, errors) {
 
     override fun build(state: State, extractors: Set<ComponentExtractor>) = ComponentSpec(
         className = extractor.componentElement.getComponentClassName(),
@@ -53,11 +53,7 @@ class ComponentSpecBuilder(extractor: ComponentExtractor, errors: Errors) :
             val e = MoreTypes.asElement(typeMirror)
             val typeName: TypeName
             val name: String
-            if (MoreElements.isAnnotationPresent(
-                    e,
-                    AutoSubcomponent::class.java
-                )
-            ) {
+            if (MoreElements.isAnnotationPresent(e, AutoSubcomponent::class.java)) {
                 with(e.getComponentClassName()) {
                     typeName = this
                     name = this.simpleName()
