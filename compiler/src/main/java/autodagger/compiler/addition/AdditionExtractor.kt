@@ -22,19 +22,18 @@ class AdditionExtractor(
     element: Element,
     types: Types,
     elements: Elements,
-    errors: Errors
+    errors: Errors,
+    var providerMethodName: String? = null,
+    var qualifierAnnotationMirror: AnnotationMirror? = null,
+    var parameterizedTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
+    var targetTypeMirrors: MutableList<TypeMirror> = mutableListOf()
 ) : AbstractExtractor<AdditionExtractor, AdditionSpec>(element, types, elements, errors) {
-
     /**
      * The addition element represented by @AutoInjector or @AutoExpose
      * It's either the element itself, or the element of an annotation if the @AutoXXX
      * is applied on the annotation
      */
     lateinit var additionElement: TypeElement
-    var providerMethodName: String? = null
-    var qualifierAnnotationMirror: AnnotationMirror? = null
-    var parameterizedTypeMirrors = mutableListOf<TypeMirror>()
-    var targetTypeMirrors = mutableListOf<TypeMirror>()
 
     init {
         try {

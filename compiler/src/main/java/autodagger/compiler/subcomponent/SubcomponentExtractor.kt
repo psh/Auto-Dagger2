@@ -5,11 +5,7 @@ import autodagger.compiler.processorworkflow.AbstractExtractor
 import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
 import autodagger.compiler.processorworkflow.Errors
 import autodagger.compiler.processorworkflow.getValueFromAnnotation
-import autodagger.compiler.utils.ANNOTATION_MODULES
-import autodagger.compiler.utils.ANNOTATION_SUBCOMPONENTS
-import autodagger.compiler.utils.ANNOTATION_SUPERINTERFACES
-import autodagger.compiler.utils.findAnnotatedAnnotation
-import com.google.auto.common.MoreElements
+import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
 import javax.inject.Scope
@@ -42,7 +38,7 @@ class SubcomponentExtractor(
     override fun extract() {
         modulesTypeMirrors = findTypeMirrors(element, ANNOTATION_MODULES)
         subcomponentsTypeMirrors = findTypeMirrors(element, ANNOTATION_SUBCOMPONENTS)
-        if (!MoreElements.isAnnotationPresent(element, AutoSubcomponent::class.java)) {
+        if (AutoSubcomponent::class.java.isNotPresentOn(element)) {
             return
         }
 
@@ -67,10 +63,8 @@ class SubcomponentExtractor(
                         val tm = value.value as TypeMirror
                         if (addsTo) {
                             val e = MoreTypes.asElement(tm)
-                            if (!MoreElements.isAnnotationPresent(
-                                    e,
-                                    AutoSubcomponent::class.java
-                                ) && !MoreElements.isAnnotationPresent(e, Subcomponent::class.java)
+                            if (AutoSubcomponent::class.java.isNotPresentOn(e)
+                                && Subcomponent::class.java.isNotPresentOn(e)
                             ) {
                                 errors.addInvalid(
                                     "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",

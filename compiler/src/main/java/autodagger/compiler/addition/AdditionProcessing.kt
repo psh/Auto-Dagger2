@@ -4,6 +4,7 @@ import autodagger.AutoInjector
 import autodagger.compiler.State
 import autodagger.compiler.processorworkflow.AbstractProcessing
 import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.utils.isNotPresentOn
 import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Provides
@@ -40,7 +41,7 @@ class AdditionProcessing(elements: Elements, types: Types, errors: Errors, state
                 return false
             }
 
-            if (!MoreElements.isAnnotationPresent(element, Provides::class.java)) {
+            if (Provides::class.java.isNotPresentOn(element)) {
                 errors.addInvalid(
                     element,
                     "@AutoExpose can be applied on @Provides method only, %s is missing it",

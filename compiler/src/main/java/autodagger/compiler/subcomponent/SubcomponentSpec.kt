@@ -18,12 +18,6 @@ data class SubcomponentSpec(
     var subcomponentsSpecs: List<MethodSpec>? = null
 ) {
     fun writeTo(filer: Filer) {
-        val annotationSpecBuilder = AnnotationSpec.builder(Subcomponent::class.java)
-
-        for (typeName in modulesTypeNames!!) {
-            annotationSpecBuilder.addMember("modules", "\$T.class", typeName)
-        }
-
         val builder = TypeSpec.interfaceBuilder(className.simpleName())
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(
@@ -31,38 +25,39 @@ data class SubcomponentSpec(
                     .addMember("value", "\$S", AutoDaggerAnnotationProcessor::class.java.name)
                     .build()
             )
-            .addAnnotation(annotationSpecBuilder.build())
-
-        for (typeName in superinterfacesTypeNames!!) {
-            builder.addSuperinterface(typeName)
-        }
-
-        if (scopeAnnotationSpec != null) {
-            builder.addAnnotation(scopeAnnotationSpec!!)
-        }
-
-        for (additionSpec in injectorSpecs!!) {
-            builder.addMethod(
-                MethodSpec.methodBuilder("inject")
-                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                    .addParameter(additionSpec.typeName, additionSpec.name)
-                    .build()
+            .addAnnotation(
+                AnnotationSpec.builder(Subcomponent::class.java).apply {
+                    modulesTypeNames?.forEach { typeName ->
+                        addMember("modules", "\$T.class", typeName)
+                    }
+                }.build()
             )
-        }
+            .apply {
+                superinterfacesTypeNames?.forEach { addSuperinterface(it) }
 
-        for (additionSpec in exposeSpecs!!) {
-            val exposeBuilder = MethodSpec.methodBuilder(additionSpec.name)
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(additionSpec.typeName)
-            if (additionSpec.qualifierAnnotationSpec != null) {
-                exposeBuilder.addAnnotation(additionSpec.qualifierAnnotationSpec)
+                scopeAnnotationSpec?.let { addAnnotation(it) }
+
+                injectorSpecs?.forEach {
+                    addMethod(
+                        MethodSpec.methodBuilder("inject")
+                            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                            .addParameter(it.typeName, it.name)
+                            .build()
+                    )
+                }
+
+                exposeSpecs?.forEach {
+                    val exposeBuilder = MethodSpec.methodBuilder(it.name)
+                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                        .returns(it.typeName)
+                    if (it.qualifierAnnotationSpec != null) {
+                        exposeBuilder.addAnnotation(it.qualifierAnnotationSpec)
+                    }
+                    addMethod(exposeBuilder.build())
+                }
+
+                if (subcomponentsSpecs!!.isNotEmpty()) addMethods(subcomponentsSpecs!!)
             }
-            builder.addMethod(exposeBuilder.build())
-        }
-
-        if (subcomponentsSpecs!!.isNotEmpty()) {
-            builder.addMethods(subcomponentsSpecs!!)
-        }
 
         try {
             JavaFile.builder(className.packageName(), builder.build())

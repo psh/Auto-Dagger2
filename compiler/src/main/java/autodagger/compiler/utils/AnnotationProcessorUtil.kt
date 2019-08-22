@@ -26,99 +26,72 @@ fun areTypesEqual(typeMirror1: TypeMirror?, typeMirror2: TypeMirror?) =
         MoreTypes.asElement(typeMirror2)
     ).qualifiedName
 
-fun getTypeNames(typeMirrors: List<TypeMirror>?): List<TypeName> {
-    val typeNames = mutableListOf<TypeName>()
-    if (typeMirrors == null) {
-        return typeNames
-    }
-
-    for (typeMirror in typeMirrors) {
-        typeNames.add(TypeName.get(typeMirror))
-    }
-
-    return typeNames
+fun getTypeNames(typeMirrors: List<TypeMirror>?): List<TypeName> = mutableListOf<TypeName>().apply {
+    typeMirrors?.forEach { add(TypeName.get(it)) }
 }
 
 fun getAdditions(
     elementTypeMirror: TypeMirror?,
     extractors: List<AdditionExtractor>
-): List<AdditionSpec> {
-    val specs = mutableListOf<AdditionSpec>()
-
+): List<AdditionSpec> = mutableListOf<AdditionSpec>().apply {
     // for each additions
-    for (additionExtractor in extractors) {
+    extractors.forEach { additionExtractor ->
         // for each targets in those additions
-        for (typeMirror in additionExtractor.targetTypeMirrors) {
+        additionExtractor.targetTypeMirrors.forEach { typeMirror ->
             // find if that target is a target for the current component
             // happens only 1 time per loop
             if (areTypesEqual(elementTypeMirror, typeMirror)) {
-                // this component is targeted by this addition
-
-                var name: String? = null
-                if (additionExtractor.providerMethodName != null) {
-                    additionExtractor.providerMethodName?.let {
-                        // try to remove "provide" or "provides" from name
-                        if (it.startsWith("provides")) {
-                            name = it.removePrefix("provides")
-                        } else if (it.startsWith("provide")) {
-                            name = it.removePrefix("provide")
-                        }
-                        name = it.decapitalize()
-                    }
-                } else {
-                    name = additionExtractor.additionElement.simpleName.toString().decapitalize()
-                }
-
-                val typeName: TypeName
-                val className = ClassName.get(additionExtractor.additionElement)
-                if (additionExtractor.parameterizedTypeMirrors.isEmpty()) {
-                    typeName = className
-                } else {
-                    // with parameterized types
-                    val types =
-                        arrayOfNulls<TypeName>(additionExtractor.parameterizedTypeMirrors.size)
-                    var i = 0
-                    for (tm in additionExtractor.parameterizedTypeMirrors) {
-                        types[i++] = TypeName.get(tm)
-                    }
-
-                    typeName = ParameterizedTypeName.get(className, *types)
-                }
-
-                specs.add(
+                add(
                     AdditionSpec(
-                        name = name,
-                        typeName = typeName,
-                        qualifierAnnotationSpec = if (additionExtractor.qualifierAnnotationMirror != null) {
-                            AnnotationSpec.get(additionExtractor.qualifierAnnotationMirror)
-                        } else null
+                        name = if (additionExtractor.providerMethodName != null) {
+                            additionExtractor.providerMethodName?.let {
+                                // try to remove "provide" or "provides" from name
+                                if (it.startsWith("provides")) {
+                                    it.removePrefix("provides")
+                                } else if (it.startsWith("provide")) {
+                                    it.removePrefix("provide")
+                                }
+                                it.decapitalize()
+                            }
+                        } else {
+                            additionExtractor.additionElement.simpleName.toString().decapitalize()
+                        },
+                        typeName = typename(additionExtractor),
+                        qualifierAnnotationSpec = additionExtractor.qualifierAnnotationMirror.toAnnotationSpec()
                     )
                 )
             }
         }
     }
-
-    return specs
 }
 
-fun getAdditions(element: Element, extractors: List<AdditionExtractor>): List<AdditionSpec> {
-    return getAdditions(element.asType(), extractors)
-}
+fun AnnotationMirror?.toAnnotationSpec(): AnnotationSpec? =
+    if (this != null) AnnotationSpec.get(this) else null
+
+private fun typename(additionExtractor: AdditionExtractor): TypeName =
+    if (additionExtractor.parameterizedTypeMirrors.isEmpty()) {
+        ClassName.get(additionExtractor.additionElement)
+    } else {
+        // with parameterized types
+        ParameterizedTypeName.get(
+            ClassName.get(additionExtractor.additionElement),
+            *additionExtractor.parameterizedTypeMirrors.map { TypeName.get(it) }.toTypedArray()
+        )
+    }
+
+fun getAdditions(element: Element, extractors: List<AdditionExtractor>): List<AdditionSpec> =
+    getAdditions(element.asType(), extractors)
 
 fun findAnnotatedAnnotation(
     element: Element,
     annotationCls: Class<out Annotation>
-): List<AnnotationMirror> {
-    val annotationMirrors = mutableListOf<AnnotationMirror>()
-
-    for (annotationMirror in element.annotationMirrors) {
-        val annotationElement = annotationMirror.annotationType.asElement()
-        if (MoreElements.isAnnotationPresent(annotationElement, annotationCls)) {
-            annotationMirrors.add(annotationMirror)
+): List<AnnotationMirror> = mutableListOf<AnnotationMirror>().apply {
+    element.annotationMirrors.forEach {
+        val annotationElement = it.annotationType.asElement()
+        if (annotationCls.isPresentOn(annotationElement)) {
+            add(it)
         }
     }
-
-    return annotationMirrors
 }
 
 fun Element.getComponentClassName(): ClassName =
@@ -131,6 +104,12 @@ fun String.getComponentSimpleName() = when {
     !endsWith("Component") -> this + "Component"
     else -> this
 }
+
+fun <T : Annotation> Class<T>.isNotPresentOn(e: Element) =
+    !this.isPresentOn(e)
+
+fun <T : Annotation> Class<T>.isPresentOn(e: Element) =
+    MoreElements.isAnnotationPresent(e, this)
 
 const val ANNOTATION_DEPENDENCIES = "dependencies"
 const val ANNOTATION_MODULES = "modules"

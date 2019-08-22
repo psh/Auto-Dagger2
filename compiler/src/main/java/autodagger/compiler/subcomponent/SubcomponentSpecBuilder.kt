@@ -2,14 +2,10 @@ package autodagger.compiler.subcomponent
 
 import autodagger.AutoSubcomponent
 import autodagger.compiler.State
-import autodagger.compiler.processorworkflow.Errors
 import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
-import autodagger.compiler.utils.getAdditions
-import autodagger.compiler.utils.getComponentClassName
-import autodagger.compiler.utils.getTypeNames
-import com.google.auto.common.MoreElements
+import autodagger.compiler.processorworkflow.Errors
+import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
-import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.TypeName
@@ -21,9 +17,7 @@ class SubcomponentSpecBuilder(extractor: SubcomponentExtractor, errors: Errors) 
     override fun build(state: State, extractors: Set<SubcomponentExtractor>) =
         SubcomponentSpec(
             className = extractor.element.getComponentClassName(),
-            scopeAnnotationSpec = if (extractor.scopeAnnotationTypeMirror != null) {
-                AnnotationSpec.get(extractor.scopeAnnotationTypeMirror!!)
-            } else null,
+            scopeAnnotationSpec = extractor.scopeAnnotationTypeMirror.toAnnotationSpec(),
             modulesTypeNames = getTypeNames(extractor.modulesTypeMirrors),
             superinterfacesTypeNames = getTypeNames(extractor.superinterfacesTypeMirrors),
             exposeSpecs = getAdditions(
@@ -47,7 +41,7 @@ class SubcomponentSpecBuilder(extractor: SubcomponentExtractor, errors: Errors) 
             val e = MoreTypes.asElement(typeMirror)
             val typeName: TypeName
             val name: String
-            if (MoreElements.isAnnotationPresent(e, AutoSubcomponent::class.java)) {
+            if (AutoSubcomponent::class.java.isPresentOn(e)) {
                 with(e.getComponentClassName()) {
                     typeName = this
                     name = simpleName()
@@ -58,14 +52,12 @@ class SubcomponentSpecBuilder(extractor: SubcomponentExtractor, errors: Errors) 
             }
 
             val modules = state.getSubcomponentModules(typeMirror)
-            val parameterSpecs = mutableListOf<ParameterSpec>()
-            if (modules != null) {
-                var count = 0
-                for (moduleTypeMirror in modules) {
-                    parameterSpecs.add(
+            val parameterSpecs = mutableListOf<ParameterSpec>().apply {
+                modules?.forEachIndexed { count, moduleTypeMirror ->
+                    add(
                         ParameterSpec.builder(
                             TypeName.get(moduleTypeMirror),
-                            String.format("module%d", ++count)
+                            String.format("module%d", count)
                         ).build()
                     )
                 }

@@ -15,10 +15,8 @@ class ComponentProcessing(elements: Elements, types: Types, errors: Errors, stat
     override fun processElement(element: Element, elementErrors: Errors.ElementErrors): Boolean {
         if (ANNOTATION_TYPE == element.kind) {
             // @AutoComponent is applied on another annotation, find out the targets of that annotation
-            val targetElements =
-                roundEnvironment.getElementsAnnotatedWith(MoreElements.asType(element))
-            for (targetElement in targetElements) {
-                val extractor = ComponentExtractor(targetElement, element, types, elements, errors)
+            roundEnvironment.getElementsAnnotatedWith(MoreElements.asType(element)).forEach {
+                val extractor = ComponentExtractor(it, element, types, elements, errors)
                 if (!errors.hasErrors()) {
                     extractors.add(extractor)
                 } else {

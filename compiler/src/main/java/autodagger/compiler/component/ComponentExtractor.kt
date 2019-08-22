@@ -7,7 +7,6 @@ import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
 import autodagger.compiler.processorworkflow.Errors
 import autodagger.compiler.processorworkflow.getValueFromAnnotation
 import autodagger.compiler.utils.*
-import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
 import javax.inject.Scope
@@ -65,7 +64,7 @@ class ComponentExtractor(
             ANNOTATION_INCLUDES
         )?.let {
             val includesElement = MoreTypes.asElement(it)
-            if (!MoreElements.isAnnotationPresent(includesElement, AutoComponent::class.java)) {
+            if (AutoComponent::class.java.isNotPresentOn(includesElement)) {
                 errors.parent.addInvalid(
                     includesElement,
                     "Included element must be annotated with @AutoComponent"
@@ -115,11 +114,8 @@ class ComponentExtractor(
                         val tm = value.value as TypeMirror
                         if (addsTo) {
                             val e = MoreTypes.asElement(tm)
-                            if (!MoreElements.isAnnotationPresent(
-                                    e,
-                                    AutoSubcomponent::class.java
-                                ) &&
-                                !MoreElements.isAnnotationPresent(e, Subcomponent::class.java)
+                            if (AutoSubcomponent::class.java.isNotPresentOn(e)
+                                && Subcomponent::class.java.isNotPresentOn(e)
                             ) {
                                 errors.addInvalid(
                                     "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",
