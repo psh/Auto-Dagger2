@@ -1,1 +1,1 @@
-autodagger.compiler.AnnotationProcessor,aggregating
+autodagger.compiler.AutoDaggerAnnotationProcessor,aggregating

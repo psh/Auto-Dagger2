@@ -8,7 +8,7 @@ import autodagger.example.KotlinExampleApplication
  */
 class FourthActivity : AbstractActivity() {
 
-    protected override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // do this here, or in the base class
