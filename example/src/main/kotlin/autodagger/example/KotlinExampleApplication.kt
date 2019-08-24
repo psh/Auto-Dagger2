@@ -13,10 +13,6 @@ class KotlinExampleApplication : Application() {
         DaggerKotlinExampleApplicationComponent.builder().build()
     }
 
-    override fun onCreate() {
-        super.onCreate()
-    }
-
     @dagger.Module
     class Module {
         @Provides

@@ -1,11 +1,11 @@
 package autodagger.compiler.addition
 
 import autodagger.AutoExpose
-import autodagger.compiler.processorworkflow.AbstractExtractor
-import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.getValueFromAnnotation
+import autodagger.compiler.Errors
+import autodagger.compiler.State
+import autodagger.compiler.utils.DiagnosticsSource
 import autodagger.compiler.utils.findAnnotatedAnnotation
-import com.google.auto.common.MoreElements
+import autodagger.compiler.utils.getValueFromAnnotation
 import javax.inject.Qualifier
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
@@ -13,46 +13,40 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind.METHOD
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.TypeMirror
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 
 class AdditionExtractor(
-    additionElement: Element,
     private val additionAnnotation: Class<out Annotation>,
-    element: Element,
-    types: Types,
-    elements: Elements,
-    errors: Errors,
-    var providerMethodName: String? = null,
-    var qualifierAnnotationMirror: AnnotationMirror? = null,
-    var parameterizedTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
-    var targetTypeMirrors: MutableList<TypeMirror> = mutableListOf()
-) : AbstractExtractor<AdditionExtractor, AdditionSpec>(element, types, elements, errors) {
+    val additionElement: TypeElement?,
+    override val element: Element,
+    state: State
+) : DiagnosticsSource {
+    private val errors: Errors.ElementErrors = Errors.ElementErrors(state.errors, element)
+    var providerMethodName: String? = null
+    var qualifierAnnotationMirror: AnnotationMirror? = null
+    var parameterizedTypeMirrors = mutableListOf<TypeMirror>()
+    var targetTypeMirrors = mutableListOf<TypeMirror>()
+
     /**
      * The addition element represented by @AutoInjector or @AutoExpose
      * It's either the element itself, or the element of an annotation if the @AutoXXX
      * is applied on the annotation
      */
-    lateinit var additionElement: TypeElement
-
     init {
-        try {
-            this.additionElement = MoreElements.asType(additionElement)
-            extract()
-        } catch (e: Exception) {
-            errors.addInvalid(
-                additionElement,
-                "%s must be a class",
-                additionElement.simpleName.toString()
-            )
-        }
+        extract()
     }
 
-    override fun extract() {
+    override fun toDiagnostics(): MutableMap<String, String?> = mutableMapOf(
+        "providerMethodName" to providerMethodName,
+        "qualifierAnnotationMirror" to qualifierAnnotationMirror?.toString(),
+        "parameterizedTypeMirrors" to parameterizedTypeMirrors.toString(),
+        "targetTypeMirrors" to targetTypeMirrors.toString()
+    )
+
+    private fun extract() {
         targetTypeMirrors = getTypeMirrors("value")
         if (targetTypeMirrors.isEmpty()) {
             // if there's no value, the target is the element itself
-            targetTypeMirrors.add(additionElement.asType())
+            targetTypeMirrors.add(additionElement!!.asType())
         }
 
         parameterizedTypeMirrors = getTypeMirrors("parameterizedTypes")
@@ -80,7 +74,11 @@ class AdditionExtractor(
 
     private fun getTypeMirrors(member: String): MutableList<TypeMirror> {
         val values =
-            getValueFromAnnotation<List<AnnotationValue>>(element, additionAnnotation, member)
+            getValueFromAnnotation<List<AnnotationValue>>(
+                element,
+                additionAnnotation,
+                member
+            )
 
         if (values == null || values.isEmpty()) {
             return mutableListOf()

@@ -6,14 +6,13 @@ import autodagger.AutoComponent
 import autodagger.AutoInjector
 import autodagger.example.DaggerScope
 import autodagger.example.KotlinExampleApplication
-import autodagger.example.second.StandardActivityComponent1
 
 /**
  * Showcase: @AutoComponent includes
  */
 @AutoComponent(
     modules = [SixthActivity.Module::class],
-    includes = StandardActivityComponent1::class
+    includes = SixthActivityIncludesViaAnnotation::class
 )
 @DaggerScope(SixthActivity::class)
 @AutoInjector

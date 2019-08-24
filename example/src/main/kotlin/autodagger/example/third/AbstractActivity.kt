@@ -5,9 +5,8 @@ import android.os.Bundle
 import autodagger.AutoInjector
 import autodagger.example.DaggerScope
 import autodagger.example.KotlinExampleApplication
-import autodagger.example.second.StandardActivityComponent1
 
-@StandardActivityComponent1
+@StandardActivityComponent3
 @AutoInjector
 @DaggerScope(AbstractActivity::class)
 abstract class AbstractActivity : Activity() {

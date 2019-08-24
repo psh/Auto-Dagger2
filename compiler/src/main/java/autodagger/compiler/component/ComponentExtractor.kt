@@ -2,10 +2,8 @@ package autodagger.compiler.component
 
 import autodagger.AutoComponent
 import autodagger.AutoSubcomponent
-import autodagger.compiler.processorworkflow.AbstractExtractor
-import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
-import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.getValueFromAnnotation
+import autodagger.compiler.Errors
+import autodagger.compiler.State
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
@@ -14,8 +12,6 @@ import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 
 /**
  * The component element represented by @AutoComponent
@@ -24,28 +20,64 @@ import javax.lang.model.util.Types
  */
 class ComponentExtractor(
     val componentElement: Element,
-    element: Element,
-    types: Types,
-    elements: Elements,
-    errors: Errors
-) : AbstractExtractor<ComponentExtractor, ComponentSpec>(element, types, elements, errors) {
+    override val element: Element,
+    private val state: State
+) : DiagnosticsSource {
+    private val errors: Errors.ElementErrors = Errors.ElementErrors(state.errors, element)
 
     var targetTypeMirror: TypeMirror? = null
-    var scopeAnnotationTypeMirror: AnnotationMirror? = null
-    var dependenciesTypeMirrors = mutableListOf<TypeMirror>()
-    var modulesTypeMirrors = mutableListOf<TypeMirror>()
-    var superinterfacesTypeMirrors = mutableListOf<TypeMirror>()
-    var subcomponentsTypeMirrors = mutableListOf<TypeMirror>()
+    private var scopeAnnotationTypeMirror: AnnotationMirror? = null
+    private var dependenciesTypeMirrors = mutableListOf<TypeMirror>()
+    private var modulesTypeMirrors = mutableListOf<TypeMirror>()
+    private var superinterfacesTypeMirrors = mutableListOf<TypeMirror>()
+    private var subcomponentsTypeMirrors = mutableListOf<TypeMirror>()
 
     init {
         extract()
     }
 
-    override fun createBuilder(errors: Errors): AbstractProcessingBuilder<ComponentExtractor, ComponentSpec>? {
-        return ComponentSpecBuilder(this, errors)
-    }
+    override fun toDiagnostics(): MutableMap<String, String?> = mutableMapOf(
+        "targetTypeMirror" to targetTypeMirror?.toString(),
+        "scopeAnnotationTypeMirror" to scopeAnnotationTypeMirror?.toString(),
+        "dependenciesTypeMirrors" to dependenciesTypeMirrors.toString(),
+        "modulesTypeMirrors" to modulesTypeMirrors.toString(),
+        "superinterfacesTypeMirrors" to superinterfacesTypeMirrors.toString(),
+        "subcomponentsTypeMirrors" to subcomponentsTypeMirrors.toString()
+    )
 
-    override fun extract() {
+    fun buildModel(extractors: Set<ComponentExtractor>) = ComponentModel(
+        className = componentElement,
+        targetTypeName = targetTypeMirror,
+        scopeAnnotation = scopeAnnotationTypeMirror,
+        dependenciesTypeNames = dependencies(extractors, state),
+        dependenciesTypeMirrors = dependenciesTypeMirrors,
+        superinterfacesTypeNames = superinterfacesTypeMirrors,
+        modulesTypeNames = modulesTypeMirrors,
+        subcomponentsTypeMirrors = subcomponentsTypeMirrors,
+        extractor = this@ComponentExtractor
+    )
+
+    // check if dependency type mirror references an @AutoComponent target
+    // if so, build the TypeName that matches the target component
+    // ignore self
+    private fun dependencies(extractors: Set<ComponentExtractor>, state: State): List<Element> =
+        mutableListOf<Element>().apply {
+            mainLoop@ for (typeMirror in dependenciesTypeMirrors) {
+                for (componentExtractor in extractors) {
+                    if (componentExtractor === this@ComponentExtractor) {
+                        continue
+                    }
+
+                    if (areTypesEqual(componentExtractor.targetTypeMirror, typeMirror)) {
+                        add(componentExtractor.componentElement)
+                        continue@mainLoop
+                    }
+                }
+                add(state.processingEnv.typeUtils.asElement(typeMirror))
+            }
+        }
+
+    private fun extract() {
         targetTypeMirror = getValueFromAnnotation<TypeMirror>(
             element,
             AutoComponent::class.java,
@@ -80,9 +112,7 @@ class ComponentExtractor(
                 return
             }
 
-            includesExtractor = ComponentExtractor(
-                includesElement, includesElement, types, elements, errors.parent
-            )
+            includesExtractor = ComponentExtractor(includesElement, includesElement, state)
 
             if (errors.parent.hasErrors()) {
                 return

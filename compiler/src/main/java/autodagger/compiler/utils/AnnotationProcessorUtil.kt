@@ -1,17 +1,20 @@
 package autodagger.compiler.utils
 
 import autodagger.compiler.addition.AdditionExtractor
-import autodagger.compiler.addition.AdditionSpec
-import com.google.auto.common.MoreElements
+import autodagger.compiler.addition.AdditionModel
+import com.google.auto.common.MoreElements.*
 import com.google.auto.common.MoreTypes
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeName
 import javax.lang.model.element.AnnotationMirror
+import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
 
+const val ANNOTATION_DEPENDENCIES = "dependencies"
+const val ANNOTATION_MODULES = "modules"
+const val ANNOTATION_TARGET = "target"
+const val ANNOTATION_SUPERINTERFACES = "superinterfaces"
+const val ANNOTATION_INCLUDES = "includes"
+const val ANNOTATION_SUBCOMPONENTS = "subcomponents"
 
 /**
  * Types.isSameType() does not work when the origin element that triggers annotation
@@ -20,20 +23,11 @@ import javax.lang.model.type.TypeMirror
  */
 
 fun areTypesEqual(typeMirror1: TypeMirror?, typeMirror2: TypeMirror?) =
-    MoreElements.asType(
-        MoreTypes.asElement(typeMirror1)
-    ).qualifiedName == MoreElements.asType(
-        MoreTypes.asElement(typeMirror2)
-    ).qualifiedName
+    asType(MoreTypes.asElement(typeMirror1)).qualifiedName ==
+            asType(MoreTypes.asElement(typeMirror2)).qualifiedName
 
-fun getTypeNames(typeMirrors: List<TypeMirror>?): List<TypeName> = mutableListOf<TypeName>().apply {
-    typeMirrors?.forEach { add(TypeName.get(it)) }
-}
-
-fun getAdditions(
-    elementTypeMirror: TypeMirror?,
-    extractors: List<AdditionExtractor>
-): List<AdditionSpec> = mutableListOf<AdditionSpec>().apply {
+fun getAdditions(elementTypeMirror: TypeMirror?, extractors: List<AdditionExtractor>):
+        List<AdditionModel> = mutableListOf<AdditionModel>().apply {
     // for each additions
     extractors.forEach { additionExtractor ->
         // for each targets in those additions
@@ -42,7 +36,7 @@ fun getAdditions(
             // happens only 1 time per loop
             if (areTypesEqual(elementTypeMirror, typeMirror)) {
                 add(
-                    AdditionSpec(
+                    AdditionModel(
                         name = if (additionExtractor.providerMethodName != null) {
                             additionExtractor.providerMethodName?.let {
                                 // try to remove "provide" or "provides" from name
@@ -54,10 +48,11 @@ fun getAdditions(
                                 it.decapitalize()
                             }
                         } else {
-                            additionExtractor.additionElement.simpleName.toString().decapitalize()
+                            additionExtractor.additionElement!!.simpleName.toString().decapitalize()
                         },
-                        typeName = typename(additionExtractor),
-                        qualifierAnnotationSpec = additionExtractor.qualifierAnnotationMirror.toAnnotationSpec()
+                        additionElement = additionExtractor.additionElement!!,
+                        parameterizedTypeMirrors = additionExtractor.parameterizedTypeMirrors,
+                        qualifierAnnotation = additionExtractor.qualifierAnnotationMirror
                     )
                 )
             }
@@ -65,21 +60,7 @@ fun getAdditions(
     }
 }
 
-fun AnnotationMirror?.toAnnotationSpec(): AnnotationSpec? =
-    if (this != null) AnnotationSpec.get(this) else null
-
-private fun typename(additionExtractor: AdditionExtractor): TypeName =
-    if (additionExtractor.parameterizedTypeMirrors.isEmpty()) {
-        ClassName.get(additionExtractor.additionElement)
-    } else {
-        // with parameterized types
-        ParameterizedTypeName.get(
-            ClassName.get(additionExtractor.additionElement),
-            *additionExtractor.parameterizedTypeMirrors.map { TypeName.get(it) }.toTypedArray()
-        )
-    }
-
-fun getAdditions(element: Element, extractors: List<AdditionExtractor>): List<AdditionSpec> =
+fun getAdditions(element: Element, extractors: List<AdditionExtractor>): List<AdditionModel> =
     getAdditions(element.asType(), extractors)
 
 fun findAnnotatedAnnotation(
@@ -94,12 +75,6 @@ fun findAnnotatedAnnotation(
     }
 }
 
-fun Element.getComponentClassName(): ClassName =
-    ClassName.get(
-        MoreElements.getPackage(this).qualifiedName.toString(),
-        simpleName.toString().getComponentSimpleName()
-    )
-
 fun String.getComponentSimpleName() = when {
     !endsWith("Component") -> this + "Component"
     else -> this
@@ -109,11 +84,28 @@ fun <T : Annotation> Class<T>.isNotPresentOn(e: Element) =
     !this.isPresentOn(e)
 
 fun <T : Annotation> Class<T>.isPresentOn(e: Element) =
-    MoreElements.isAnnotationPresent(e, this)
+    isAnnotationPresent(e, this)
 
-const val ANNOTATION_DEPENDENCIES = "dependencies"
-const val ANNOTATION_MODULES = "modules"
-const val ANNOTATION_TARGET = "target"
-const val ANNOTATION_SUPERINTERFACES = "superinterfaces"
-const val ANNOTATION_INCLUDES = "includes"
-const val ANNOTATION_SUBCOMPONENTS = "subcomponents"
+@Suppress("UNCHECKED_CAST")
+fun <T> getValueFromAnnotation(
+    element: Element,
+    annotation: Class<out Annotation>,
+    name: String
+): T? {
+    val annotationMirror =
+        getAnnotationMirror(element, annotation)
+    if (!annotationMirror.isPresent) {
+        return null
+    }
+
+    return getAnnotationValue(annotationMirror.get(), name)?.value as T
+}
+
+private fun getAnnotationValue(annotationMirror: AnnotationMirror, key: String): AnnotationValue? {
+    for ((key1, value) in annotationMirror.elementValues) {
+        if (key1.simpleName.toString() == key) {
+            return value
+        }
+    }
+    return null
+}

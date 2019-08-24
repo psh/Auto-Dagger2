@@ -1,10 +1,8 @@
 package autodagger.compiler.subcomponent
 
 import autodagger.AutoSubcomponent
-import autodagger.compiler.processorworkflow.AbstractExtractor
-import autodagger.compiler.processorworkflow.AbstractProcessingBuilder
-import autodagger.compiler.processorworkflow.Errors
-import autodagger.compiler.processorworkflow.getValueFromAnnotation
+import autodagger.compiler.Errors
+import autodagger.compiler.State
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
@@ -13,29 +11,37 @@ import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 
-class SubcomponentExtractor(
-    element: Element,
-    types: Types,
-    elements: Elements,
-    errors: Errors,
-    var modulesTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
-    var superinterfacesTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
-    var subcomponentsTypeMirrors: MutableList<TypeMirror> = mutableListOf(),
-    var scopeAnnotationTypeMirror: AnnotationMirror? = null
-) : AbstractExtractor<SubcomponentExtractor, SubcomponentSpec>(element, types, elements, errors) {
+class SubcomponentExtractor(override val element: Element, state: State) : DiagnosticsSource {
+    private val errors: Errors.ElementErrors = Errors.ElementErrors(state.errors, element)
+
+    var modulesTypeMirrors = mutableListOf<TypeMirror>()
+    private var superinterfacesTypeMirrors = mutableListOf<TypeMirror>()
+    private var subcomponentsTypeMirrors = mutableListOf<TypeMirror>()
+    private var scopeAnnotationTypeMirror: AnnotationMirror? = null
 
     init {
         extract()
     }
 
-    override fun createBuilder(errors: Errors): AbstractProcessingBuilder<SubcomponentExtractor, SubcomponentSpec>? {
-        return SubcomponentSpecBuilder(this, errors)
-    }
+    override fun toDiagnostics(): MutableMap<String, String?> = mutableMapOf(
+        "scopeAnnotationTypeMirror" to scopeAnnotationTypeMirror?.toString(),
+        "modulesTypeMirrors" to modulesTypeMirrors.toString(),
+        "superinterfacesTypeMirrors" to superinterfacesTypeMirrors.toString(),
+        "subcomponentsTypeMirrors" to subcomponentsTypeMirrors.toString()
+    )
 
-    override fun extract() {
+    fun buildModel(state: State) = SubcomponentModel(
+        className = element,
+        scopeAnnotation = scopeAnnotationTypeMirror,
+        modulesTypeNames = modulesTypeMirrors,
+        superinterfacesTypeNames = superinterfacesTypeMirrors,
+        exposeModels = getAdditions(element, state.exposeExtractors.values.toList()),
+        injectorModels = getAdditions(element, state.injectorExtractors.values.toList()),
+        subcomponents = subcomponentsTypeMirrors
+    )
+
+    private fun extract() {
         modulesTypeMirrors = findTypeMirrors(element, ANNOTATION_MODULES)
         subcomponentsTypeMirrors = findTypeMirrors(element, ANNOTATION_SUBCOMPONENTS)
         if (AutoSubcomponent::class.java.isNotPresentOn(element)) {
