@@ -15,7 +15,7 @@ fun ComponentModel.writeTo(state: State, extractors: Set<ComponentExtractor>, fi
     val builder = TypeSpec.interfaceBuilder(componentClassName.simpleName())
         .addModifiers(Modifier.PUBLIC)
         .addAnnotation(generatedAnnotation())
-        .addAnnotation(componentAnnotation(state))
+        .addAnnotation(componentAnnotation())
         .apply {
             getSuperinterfaces(
                 superinterfacesTypeNames,
@@ -47,7 +47,7 @@ fun ComponentModel.writeTo(state: State, extractors: Set<ComponentExtractor>, fi
     }
 }
 
-private fun ComponentModel.componentAnnotation(state: State): AnnotationSpec =
+private fun ComponentModel.componentAnnotation(): AnnotationSpec =
     AnnotationSpec.builder(Component::class.java).apply {
         val dependencies = dependenciesTypeNames
             ?.map { it.getComponentClassName() }

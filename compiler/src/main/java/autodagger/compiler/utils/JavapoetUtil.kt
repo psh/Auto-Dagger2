@@ -3,12 +3,16 @@ package autodagger.compiler.utils
 import autodagger.compiler.AutoDaggerAnnotationProcessor
 import autodagger.compiler.addition.AdditionModel
 import com.google.auto.common.MoreElements.getPackage
-import com.squareup.javapoet.*
 import javax.annotation.Generated
 import javax.lang.model.element.*
 import javax.lang.model.type.TypeMirror
+import com.squareup.javapoet.AnnotationSpec as JavapoetAnnotationSpec
+import com.squareup.javapoet.ClassName as JavapoetClassName
+import com.squareup.javapoet.MethodSpec as JavapoetMethodSpec
+import com.squareup.javapoet.ParameterizedTypeName as JavapoetParameterizedTypeName
+import com.squareup.javapoet.TypeName as JavapoetTypeName
 
-fun Element.getComponentClassName(): ClassName {
+fun Element.getComponentClassName(): JavapoetClassName {
     var e = this
     var name = e.simpleName.toString()
 
@@ -17,17 +21,18 @@ fun Element.getComponentClassName(): ClassName {
         name = "${e.simpleName}.$name"
     }
 
-    return ClassName.get(
+    return JavapoetClassName.get(
         getPackage(e).qualifiedName.toString(),
         name.getComponentSimpleName()
     )
 }
 
-fun generatedAnnotation(): AnnotationSpec = AnnotationSpec.builder(Generated::class.java)
+fun generatedAnnotation(): JavapoetAnnotationSpec =
+    JavapoetAnnotationSpec.builder(Generated::class.java)
     .addMember("value", "\$S", AutoDaggerAnnotationProcessor::class.java.name)
     .build()
 
-fun exposeMethod(it: AdditionModel): MethodSpec = MethodSpec.methodBuilder(it.name)
+fun exposeMethod(it: AdditionModel): JavapoetMethodSpec = JavapoetMethodSpec.methodBuilder(it.name)
     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
     .returns(
         typename(
@@ -35,12 +40,13 @@ fun exposeMethod(it: AdditionModel): MethodSpec = MethodSpec.methodBuilder(it.na
             it.parameterizedTypeMirrors
         )
     ).apply {
-        it.qualifierAnnotation?.let<AnnotationMirror, MethodSpec.Builder?> {
+        it.qualifierAnnotation?.let<AnnotationMirror, JavapoetMethodSpec.Builder?> {
             addAnnotation(it.toAnnotationSpec())
         }
     }.build()
 
-fun injectMethod(it: AdditionModel): MethodSpec = MethodSpec.methodBuilder("inject")
+fun injectMethod(it: AdditionModel): JavapoetMethodSpec =
+    JavapoetMethodSpec.methodBuilder("inject")
     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
     .addParameter(
         typename(
@@ -49,23 +55,22 @@ fun injectMethod(it: AdditionModel): MethodSpec = MethodSpec.methodBuilder("inje
         ), it.name
     ).build()
 
-fun AnnotationMirror?.toAnnotationSpec(): AnnotationSpec? =
-    if (this != null) AnnotationSpec.get(this) else null
+fun AnnotationMirror?.toAnnotationSpec(): JavapoetAnnotationSpec? =
+    if (this != null) JavapoetAnnotationSpec.get(this) else null
 
-fun typename(
+private fun typename(
     additionElement: TypeElement,
     parameterizedTypeMirrors: MutableList<TypeMirror>
-): TypeName =
+): JavapoetTypeName =
     if (parameterizedTypeMirrors.isEmpty()) {
-        ClassName.get(additionElement)
+        JavapoetClassName.get(additionElement)
     } else {
         // with parameterized types
-        ParameterizedTypeName.get(
-            ClassName.get(additionElement),
-            *parameterizedTypeMirrors.map { TypeName.get(it) }.toTypedArray()
+        JavapoetParameterizedTypeName.get(
+            JavapoetClassName.get(additionElement),
+            *parameterizedTypeMirrors.map { JavapoetTypeName.get(it) }.toTypedArray()
         )
     }
 
-fun getTypeNames(typeMirrors: List<TypeMirror>?): List<TypeName> = mutableListOf<TypeName>().apply {
-    typeMirrors?.forEach { add(TypeName.get(it)) }
-}
+fun getTypeNames(typeMirrors: List<TypeMirror>?) =
+    mutableListOf<JavapoetTypeName>().apply { typeMirrors?.forEach { add(JavapoetTypeName.get(it)) } }
