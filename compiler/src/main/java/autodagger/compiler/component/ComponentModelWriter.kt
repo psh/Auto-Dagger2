@@ -4,51 +4,53 @@ import autodagger.AutoSubcomponent
 import autodagger.compiler.State
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
-import com.squareup.javapoet.*
 import dagger.Component
 import javax.annotation.processing.Filer
 import javax.lang.model.element.Modifier
-import javax.lang.model.type.TypeMirror
+import com.squareup.javapoet.AnnotationSpec as JavapoetAnnotationSpec
+import com.squareup.javapoet.JavaFile as JavapoetJavaFile
+import com.squareup.javapoet.MethodSpec as JavapoetMethodSpec
+import com.squareup.javapoet.ParameterSpec as JavapoetParameterSpec
+import com.squareup.javapoet.TypeName as JavapoetTypeName
+import com.squareup.javapoet.TypeSpec as JavapoetTypeSpec
 
 fun ComponentModel.writeTo(state: State, extractors: Set<ComponentExtractor>, filer: Filer) {
     val componentClassName = className.getComponentClassName()
-    val builder = TypeSpec.interfaceBuilder(componentClassName.simpleName())
+    val builder = JavapoetTypeSpec.interfaceBuilder(componentClassName.simpleName())
         .addModifiers(Modifier.PUBLIC)
         .addAnnotation(generatedAnnotation())
         .addAnnotation(componentAnnotation())
         .apply {
-            getSuperinterfaces(
-                superinterfacesTypeNames,
-                extractors
-            ).forEach { addSuperinterface(it) }
+            superinterfaces(extractors)
+                .forEach { addSuperinterface(it) }
 
             scopeAnnotation?.let {
-                addAnnotation(it.toAnnotationSpec())
+                addAnnotation(it.toJavapoetAnnotationSpec())
             }
 
-            getAdditions(
+            additionsMatchingElement(
                 targetTypeName,
-                state.injectorExtractors.values.toList()
+                state.injectorExtractors.values
             ).forEach { addMethod(injectMethod(it)) }
 
-            getAdditions(
+            additionsMatchingElement(
                 targetTypeName,
-                state.exposeExtractors.values.toList()
+                state.exposeExtractors.values
             ).forEach { addMethod(exposeMethod(it)) }
 
-            addMethods(subcomponents(state, subcomponentsTypeMirrors))
+            addMethods(subcomponents(state))
         }
 
     try {
-        JavaFile.builder(componentClassName.packageName(), builder.build())
+        JavapoetJavaFile.builder(componentClassName.packageName(), builder.build())
             .build()
             .writeTo(filer)
     } catch (e: Exception) {
     }
 }
 
-private fun ComponentModel.componentAnnotation(): AnnotationSpec =
-    AnnotationSpec.builder(Component::class.java).apply {
+private fun ComponentModel.componentAnnotation(): JavapoetAnnotationSpec =
+    JavapoetAnnotationSpec.builder(Component::class.java).apply {
         val dependencies = dependenciesTypeNames
             ?.map { it.getComponentClassName() }
             ?.toSet() ?: emptySet()
@@ -62,16 +64,15 @@ private fun ComponentModel.componentAnnotation(): AnnotationSpec =
         }
     }.build()
 
-private fun ComponentModel.getSuperinterfaces(
-    superinterfaces: List<TypeMirror>?,
+private fun ComponentModel.superinterfaces(
     extractors: Set<ComponentExtractor>
-): List<TypeName> {
-    val typeNames = mutableListOf<TypeName>()
-    if (superinterfaces == null) {
+): List<JavapoetTypeName> {
+    val typeNames = mutableListOf<JavapoetTypeName>()
+    if (superinterfacesTypeNames == null) {
         return typeNames
     }
 
-    mainLoop@ for (typeMirror in superinterfaces) {
+    mainLoop@ for (typeMirror in superinterfacesTypeNames!!) {
         // check if dependency type mirror references an @AutoComponent target
         // if so, build the TypeName that matches the target component
         for (componentExtractor in extractors) {
@@ -86,41 +87,38 @@ private fun ComponentModel.getSuperinterfaces(
             }
         }
 
-        typeNames.add(TypeName.get(typeMirror))
+        typeNames.add(JavapoetTypeName.get(typeMirror))
     }
 
     return typeNames
 }
 
-private fun subcomponents(
-    state: State,
-    subcomponentsTypeMirrors: MutableList<TypeMirror>?
-): List<MethodSpec> {
+private fun ComponentModel.subcomponents(state: State): List<JavapoetMethodSpec> {
     if (subcomponentsTypeMirrors.isNullOrEmpty()) {
         return emptyList()
     }
 
-    val methodSpecs = mutableListOf<MethodSpec>()
+    val methodSpecs = mutableListOf<JavapoetMethodSpec>()
     for (typeMirror in subcomponentsTypeMirrors) {
         val e = MoreTypes.asElement(typeMirror)
-        val typeName: TypeName
+        val typeName: JavapoetTypeName
         val name: String
-        if (AutoSubcomponent::class.java.isPresentOn(e)) {
+        if (e annotatedWith AutoSubcomponent::class.java) {
             with(e.getComponentClassName()) {
                 typeName = this
                 name = this.simpleName()
             }
         } else {
-            typeName = TypeName.get(typeMirror)
+            typeName = JavapoetTypeName.get(typeMirror)
             name = e.simpleName.toString()
         }
 
-        val modules = state.getSubcomponentModules(typeMirror)
-        val parameterSpecs = mutableListOf<ParameterSpec>().apply {
-            modules?.forEachIndexed { count, moduleTypeMirror ->
+        val modules = state.subcomponentModulesOf(typeMirror)
+        val parameterSpecs = mutableListOf<JavapoetParameterSpec>().apply {
+            modules.forEachIndexed { count, moduleTypeMirror ->
                 add(
-                    ParameterSpec.builder(
-                        TypeName.get(moduleTypeMirror),
+                    JavapoetParameterSpec.builder(
+                        JavapoetTypeName.get(moduleTypeMirror),
                         String.format("module%d", count)
                     ).build()
                 )
@@ -128,7 +126,7 @@ private fun subcomponents(
         }
 
         methodSpecs.add(
-            MethodSpec.methodBuilder("plus$name")
+            JavapoetMethodSpec.methodBuilder("plus$name")
                 .addModifiers(
                     Modifier.PUBLIC,
                     Modifier.ABSTRACT

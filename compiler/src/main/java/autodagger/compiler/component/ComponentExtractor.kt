@@ -20,9 +20,9 @@ import javax.lang.model.type.TypeMirror
  */
 class ComponentExtractor(
     val componentElement: Element,
-    override val element: Element,
+    val element: Element,
     private val state: State
-) : DiagnosticsSource {
+) {
     private val errors: Errors.ElementErrors = Errors.ElementErrors(state.errors, element)
 
     var targetTypeMirror: TypeMirror? = null
@@ -35,15 +35,6 @@ class ComponentExtractor(
     init {
         extract()
     }
-
-    override fun toDiagnostics(): MutableMap<String, String?> = mutableMapOf(
-        "targetTypeMirror" to targetTypeMirror?.toString(),
-        "scopeAnnotationTypeMirror" to scopeAnnotationTypeMirror?.toString(),
-        "dependenciesTypeMirrors" to dependenciesTypeMirrors.toString(),
-        "modulesTypeMirrors" to modulesTypeMirrors.toString(),
-        "superinterfacesTypeMirrors" to superinterfacesTypeMirrors.toString(),
-        "subcomponentsTypeMirrors" to subcomponentsTypeMirrors.toString()
-    )
 
     fun buildModel(extractors: Set<ComponentExtractor>) = ComponentModel(
         className = componentElement,
@@ -96,7 +87,7 @@ class ComponentExtractor(
             ANNOTATION_INCLUDES
         )?.let {
             val includesElement = MoreTypes.asElement(it)
-            if (AutoComponent::class.java.isNotPresentOn(includesElement)) {
+            if (includesElement notAnnotatedWith AutoComponent::class.java) {
                 errors.parent.addInvalid(
                     includesElement,
                     "Included element must be annotated with @AutoComponent"
@@ -129,8 +120,8 @@ class ComponentExtractor(
         scopeAnnotationTypeMirror = findScope()
     }
 
-    private fun findTypeMirrors(element: Element, name: String): MutableList<TypeMirror> {
-        return mutableListOf<TypeMirror>().apply {
+    private fun findTypeMirrors(element: Element, name: String): MutableList<TypeMirror> =
+        mutableListOf<TypeMirror>().apply {
             val addsTo = name == ANNOTATION_SUBCOMPONENTS
             getValueFromAnnotation<List<AnnotationValue>>(
                 element, AutoComponent::class.java, name
@@ -144,8 +135,8 @@ class ComponentExtractor(
                         val tm = value.value as TypeMirror
                         if (addsTo) {
                             val e = MoreTypes.asElement(tm)
-                            if (AutoSubcomponent::class.java.isNotPresentOn(e)
-                                && Subcomponent::class.java.isNotPresentOn(e)
+                            if (e notAnnotatedWith AutoSubcomponent::class.java
+                                && e notAnnotatedWith Subcomponent::class.java
                             ) {
                                 errors.addInvalid(
                                     "@AutoComponent cannot declare a subcomponent that is not annotated with @Subcomponent or @AutoSubcomponent: %s",
@@ -163,7 +154,6 @@ class ComponentExtractor(
                 }
             }
         }
-    }
 
     /**
      * Find annotation that is itself annoted with @Scope
@@ -173,28 +163,14 @@ class ComponentExtractor(
      */
     private fun findScope(): AnnotationMirror? {
         // first look on the @AutoComponent annotated element
-        var annotationMirror = findScope(element)
+        var annotationMirror = element.findScope(errors)
         if (annotationMirror == null && element !== componentElement) {
             // look also on the real component element, if @AutoComponent is itself on
             // an another annotation
-            annotationMirror = findScope(componentElement)
+            annotationMirror = componentElement.findScope(errors)
         }
 
         return annotationMirror
-    }
-
-    private fun findScope(element: Element): AnnotationMirror? {
-        val annotationMirrors = findAnnotatedAnnotation(element, Scope::class.java)
-        if (annotationMirrors.isEmpty()) {
-            return null
-        }
-
-        if (annotationMirrors.size > 1) {
-            errors.parent.addInvalid(element, "Cannot have several scope (@Scope).")
-            return null
-        }
-
-        return annotationMirrors[0]
     }
 
     private fun validateAnnotationValue(value: AnnotationValue, member: String): Boolean {
@@ -209,3 +185,4 @@ class ComponentExtractor(
         return true
     }
 }
+

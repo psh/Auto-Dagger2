@@ -23,7 +23,10 @@ fun Element.getComponentClassName(): JavapoetClassName {
 
     return JavapoetClassName.get(
         getPackage(e).qualifiedName.toString(),
-        name.getComponentSimpleName()
+        when {
+            name.endsWith("Component") -> name
+            else -> "${name}Component"
+        }
     )
 }
 
@@ -41,21 +44,17 @@ fun exposeMethod(it: AdditionModel): JavapoetMethodSpec = JavapoetMethodSpec.met
         )
     ).apply {
         it.qualifierAnnotation?.let<AnnotationMirror, JavapoetMethodSpec.Builder?> {
-            addAnnotation(it.toAnnotationSpec())
+            addAnnotation(it.toJavapoetAnnotationSpec())
         }
     }.build()
 
 fun injectMethod(it: AdditionModel): JavapoetMethodSpec =
     JavapoetMethodSpec.methodBuilder("inject")
-    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-    .addParameter(
-        typename(
-            it.additionElement,
-            it.parameterizedTypeMirrors
-        ), it.name
-    ).build()
+        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+        .addParameter(typename(it.additionElement, it.parameterizedTypeMirrors), it.name)
+        .build()
 
-fun AnnotationMirror?.toAnnotationSpec(): JavapoetAnnotationSpec? =
+fun AnnotationMirror?.toJavapoetAnnotationSpec(): JavapoetAnnotationSpec? =
     if (this != null) JavapoetAnnotationSpec.get(this) else null
 
 private fun typename(

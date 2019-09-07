@@ -1,9 +1,11 @@
 package autodagger.compiler.utils
 
+import autodagger.compiler.Errors
 import autodagger.compiler.addition.AdditionExtractor
 import autodagger.compiler.addition.AdditionModel
 import com.google.auto.common.MoreElements.*
 import com.google.auto.common.MoreTypes
+import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
@@ -26,42 +28,41 @@ fun areTypesEqual(typeMirror1: TypeMirror?, typeMirror2: TypeMirror?) =
     asType(MoreTypes.asElement(typeMirror1)).qualifiedName ==
             asType(MoreTypes.asElement(typeMirror2)).qualifiedName
 
-fun getAdditions(elementTypeMirror: TypeMirror?, extractors: List<AdditionExtractor>):
-        List<AdditionModel> = mutableListOf<AdditionModel>().apply {
-    // for each additions
+fun additionsMatchingElement(
+    elementTypeMirror: TypeMirror?, extractors: Collection<AdditionExtractor>
+): List<AdditionModel> = mutableListOf<AdditionModel>().apply {
     extractors.forEach { additionExtractor ->
         // for each targets in those additions
         additionExtractor.targetTypeMirrors.forEach { typeMirror ->
             // find if that target is a target for the current component
             // happens only 1 time per loop
             if (areTypesEqual(elementTypeMirror, typeMirror)) {
-                add(
-                    AdditionModel(
-                        name = if (additionExtractor.providerMethodName != null) {
-                            additionExtractor.providerMethodName?.let {
-                                // try to remove "provide" or "provides" from name
-                                if (it.startsWith("provides")) {
-                                    it.removePrefix("provides")
-                                } else if (it.startsWith("provide")) {
-                                    it.removePrefix("provide")
-                                }
-                                it.decapitalize()
-                            }
-                        } else {
-                            additionExtractor.additionElement!!.simpleName.toString().decapitalize()
-                        },
-                        additionElement = additionExtractor.additionElement!!,
-                        parameterizedTypeMirrors = additionExtractor.parameterizedTypeMirrors,
-                        qualifierAnnotation = additionExtractor.qualifierAnnotationMirror
-                    )
-                )
+                add(createAdditionModel(additionExtractor))
             }
         }
     }
 }
 
-fun getAdditions(element: Element, extractors: List<AdditionExtractor>): List<AdditionModel> =
-    getAdditions(element.asType(), extractors)
+private fun createAdditionModel(additionExtractor: AdditionExtractor): AdditionModel =
+    AdditionModel(
+        name = if (additionExtractor.providerMethodName != null) {
+            additionExtractor.providerMethodName?.let {
+                // try to remove "provide" or "provides" from name
+                if (it.startsWith("provides")) {
+                    it.removePrefix("provides")
+                } else if (it.startsWith("provide")) {
+                    it.removePrefix("provide")
+                }
+                it.decapitalize()
+            }
+        } else {
+            additionExtractor.additionElement!!.simpleName.toString()
+                .decapitalize()
+        },
+        additionElement = additionExtractor.additionElement!!,
+        parameterizedTypeMirrors = additionExtractor.parameterizedTypeMirrors,
+        qualifierAnnotation = additionExtractor.qualifierAnnotationMirror
+    )
 
 fun findAnnotatedAnnotation(
     element: Element,
@@ -69,22 +70,17 @@ fun findAnnotatedAnnotation(
 ): List<AnnotationMirror> = mutableListOf<AnnotationMirror>().apply {
     element.annotationMirrors.forEach {
         val annotationElement = it.annotationType.asElement()
-        if (annotationCls.isPresentOn(annotationElement)) {
+        if (annotationElement annotatedWith annotationCls) {
             add(it)
         }
     }
 }
 
-fun String.getComponentSimpleName() = when {
-    !endsWith("Component") -> this + "Component"
-    else -> this
-}
+infix fun <T : Annotation> Element.annotatedWith(annotation: Class<T>): Boolean =
+    isAnnotationPresent(this, annotation)
 
-fun <T : Annotation> Class<T>.isNotPresentOn(e: Element) =
-    !this.isPresentOn(e)
-
-fun <T : Annotation> Class<T>.isPresentOn(e: Element) =
-    isAnnotationPresent(e, this)
+infix fun <T : Annotation> Element.notAnnotatedWith(annotation: Class<T>): Boolean =
+    !isAnnotationPresent(this, annotation)
 
 @Suppress("UNCHECKED_CAST")
 fun <T> getValueFromAnnotation(
@@ -108,4 +104,18 @@ private fun getAnnotationValue(annotationMirror: AnnotationMirror, key: String):
         }
     }
     return null
+}
+
+fun Element.findScope(elementErrors: Errors.ElementErrors): AnnotationMirror? {
+    val annotationMirrors = findAnnotatedAnnotation(this, Scope::class.java)
+    if (annotationMirrors.isEmpty()) {
+        return null
+    }
+
+    if (annotationMirrors.size > 1) {
+        elementErrors.parent.addInvalid(this, "Cannot have several scope (@Scope).")
+        return null
+    }
+
+    return annotationMirrors[0]
 }

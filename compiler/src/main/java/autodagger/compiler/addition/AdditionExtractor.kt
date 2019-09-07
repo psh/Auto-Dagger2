@@ -3,7 +3,6 @@ package autodagger.compiler.addition
 import autodagger.AutoExpose
 import autodagger.compiler.Errors
 import autodagger.compiler.State
-import autodagger.compiler.utils.DiagnosticsSource
 import autodagger.compiler.utils.findAnnotatedAnnotation
 import autodagger.compiler.utils.getValueFromAnnotation
 import javax.inject.Qualifier
@@ -17,9 +16,9 @@ import javax.lang.model.type.TypeMirror
 class AdditionExtractor(
     private val additionAnnotation: Class<out Annotation>,
     val additionElement: TypeElement?,
-    override val element: Element,
+    val element: Element,
     state: State
-) : DiagnosticsSource {
+) {
     private val errors: Errors.ElementErrors = Errors.ElementErrors(state.errors, element)
     var providerMethodName: String? = null
     var qualifierAnnotationMirror: AnnotationMirror? = null
@@ -34,13 +33,6 @@ class AdditionExtractor(
     init {
         extract()
     }
-
-    override fun toDiagnostics(): MutableMap<String, String?> = mutableMapOf(
-        "providerMethodName" to providerMethodName,
-        "qualifierAnnotationMirror" to qualifierAnnotationMirror?.toString(),
-        "parameterizedTypeMirrors" to parameterizedTypeMirrors.toString(),
-        "targetTypeMirrors" to targetTypeMirrors.toString()
-    )
 
     private fun extract() {
         targetTypeMirrors = getTypeMirrors("value")
