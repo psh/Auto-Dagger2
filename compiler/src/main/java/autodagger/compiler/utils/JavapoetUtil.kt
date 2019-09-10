@@ -3,6 +3,8 @@ package autodagger.compiler.utils
 import autodagger.compiler.AutoDaggerAnnotationProcessor
 import autodagger.compiler.addition.AdditionModel
 import com.google.auto.common.MoreElements.getPackage
+import dagger.Binds
+import dagger.Module
 import javax.annotation.Generated
 import javax.lang.model.element.*
 import javax.lang.model.type.TypeMirror
@@ -30,10 +32,16 @@ fun Element.getComponentClassName(): JavapoetClassName {
     )
 }
 
+fun moduleAnnotation(): JavapoetAnnotationSpec =
+    JavapoetAnnotationSpec.builder(Module::class.java).build()
+
+fun bindsAnnotation(): JavapoetAnnotationSpec =
+    JavapoetAnnotationSpec.builder(Binds::class.java).build()
+
 fun generatedAnnotation(): JavapoetAnnotationSpec =
     JavapoetAnnotationSpec.builder(Generated::class.java)
-    .addMember("value", "\$S", AutoDaggerAnnotationProcessor::class.java.name)
-    .build()
+        .addMember("value", "\$S", AutoDaggerAnnotationProcessor::class.java.name)
+        .build()
 
 fun exposeMethod(it: AdditionModel): JavapoetMethodSpec = JavapoetMethodSpec.methodBuilder(it.name)
     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)

@@ -5,6 +5,7 @@ import autodagger.compiler.addition.AdditionExtractor
 import autodagger.compiler.addition.AdditionModel
 import com.google.auto.common.MoreElements.*
 import com.google.auto.common.MoreTypes
+import javax.inject.Qualifier
 import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
@@ -29,7 +30,8 @@ fun areTypesEqual(typeMirror1: TypeMirror?, typeMirror2: TypeMirror?) =
             asType(MoreTypes.asElement(typeMirror2)).qualifiedName
 
 fun additionsMatchingElement(
-    elementTypeMirror: TypeMirror?, extractors: Collection<AdditionExtractor>
+    elementTypeMirror: TypeMirror?,
+    extractors: Collection<AdditionExtractor>
 ): List<AdditionModel> = mutableListOf<AdditionModel>().apply {
     extractors.forEach { additionExtractor ->
         // for each targets in those additions
@@ -63,6 +65,20 @@ private fun createAdditionModel(additionExtractor: AdditionExtractor): AdditionM
         parameterizedTypeMirrors = additionExtractor.parameterizedTypeMirrors,
         qualifierAnnotation = additionExtractor.qualifierAnnotationMirror
     )
+
+fun findQualifier(element: Element, errors: Errors.ElementErrors): AnnotationMirror? {
+    val annotationMirrors = findAnnotatedAnnotation(element, Qualifier::class.java)
+    if (annotationMirrors.isEmpty()) {
+        return null
+    }
+
+    if (annotationMirrors.size > 1) {
+        errors.parent.addInvalid(element, "Cannot have several qualifiers (@Qualifier).")
+        return null
+    }
+
+    return annotationMirrors[0]
+}
 
 fun findAnnotatedAnnotation(
     element: Element,

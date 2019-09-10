@@ -7,7 +7,6 @@ import autodagger.compiler.State
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
 import dagger.Subcomponent
-import javax.inject.Scope
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element

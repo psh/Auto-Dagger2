@@ -1,9 +1,6 @@
 package autodagger.compiler
 
-import autodagger.AutoComponent
-import autodagger.AutoExpose
-import autodagger.AutoInjector
-import autodagger.AutoSubcomponent
+import autodagger.*
 import autodagger.compiler.component.writeTo
 import autodagger.compiler.subcomponent.writeTo
 import javax.annotation.processing.AbstractProcessor
@@ -18,6 +15,7 @@ import javax.lang.model.element.TypeElement
 class AutoDaggerAnnotationProcessor : AbstractProcessor() {
     companion object {
         val ANNOTATION_VISITORS = mapOf(
+            AutoBinds::class.java to BINDS_VISITOR,
             AutoInjector::class.java to INJECT_VISITOR,
             AutoExpose::class.java to EXPOSE_VISITOR,
             AutoComponent::class.java to COMPONENT_VISITOR,
@@ -68,7 +66,7 @@ class AutoDaggerAnnotationProcessor : AbstractProcessor() {
         asSequence()
             .map { it.buildModel(this) }
             .forEach { it.writeTo(this@writeComponents, this, processingEnv.filer) }
-        }
+    }
 
     private fun <T : Annotation> Class<T>.visit(state: State, visitor: Visitor) =
         state.roundEnvironment.getElementsAnnotatedWith(this).forEach { e ->

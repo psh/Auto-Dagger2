@@ -4,6 +4,7 @@ import autodagger.AutoExpose
 import autodagger.compiler.Errors
 import autodagger.compiler.State
 import autodagger.compiler.utils.findAnnotatedAnnotation
+import autodagger.compiler.utils.findQualifier
 import autodagger.compiler.utils.getValueFromAnnotation
 import javax.inject.Qualifier
 import javax.lang.model.element.AnnotationMirror
@@ -45,23 +46,9 @@ class AdditionExtractor(
 
         // @AutoExpose on provider method can have qualifier
         if (additionAnnotation == AutoExpose::class.java && element.kind == METHOD) {
-            qualifierAnnotationMirror = findQualifier(element)
+            qualifierAnnotationMirror = findQualifier(element, errors)
             providerMethodName = element.simpleName.toString()
         }
-    }
-
-    private fun findQualifier(element: Element): AnnotationMirror? {
-        val annotationMirrors = findAnnotatedAnnotation(element, Qualifier::class.java)
-        if (annotationMirrors.isEmpty()) {
-            return null
-        }
-
-        if (annotationMirrors.size > 1) {
-            errors.parent.addInvalid(element, "Cannot have several qualifiers (@Qualifier).")
-            return null
-        }
-
-        return annotationMirrors[0]
     }
 
     private fun getTypeMirrors(member: String): MutableList<TypeMirror> {
