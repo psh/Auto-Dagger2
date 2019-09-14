@@ -1,6 +1,7 @@
 package autodagger.compiler
 
 import autodagger.compiler.addition.AdditionExtractor
+import autodagger.compiler.binds.BindsExtractor
 import autodagger.compiler.component.ComponentExtractor
 import autodagger.compiler.subcomponent.SubcomponentExtractor
 import javax.annotation.processing.Messager
@@ -12,6 +13,7 @@ import javax.tools.Diagnostic
 
 @Suppress("UNCHECKED_CAST")
 class State(
+    val bindingExtractors: MutableList<BindsExtractor> = mutableListOf(),
     val injectorExtractors: MutableMap<Element, AdditionExtractor> = mutableMapOf(),
     val exposeExtractors: MutableMap<Element, AdditionExtractor> = mutableMapOf(),
     val componentExtractors: MutableMap<Element, ComponentExtractor> = mutableMapOf(),
@@ -21,6 +23,10 @@ class State(
     private val subcomponentsModules: MutableMap<TypeMirror, List<TypeMirror>> = mutableMapOf()
     lateinit var processingEnv: ProcessingEnvironment
     lateinit var roundEnvironment: RoundEnvironment
+
+    fun addBindingExtractor(extractor: BindsExtractor) {
+        bindingExtractors.add(extractor)
+    }
 
     fun addInjectorExtractor(extractor: AdditionExtractor) {
         if (extractor.targetTypeMirrors.isNotEmpty())

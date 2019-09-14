@@ -29,7 +29,10 @@ class SubcomponentExtractor(val element: Element, state: State) {
         modulesTypeNames = modulesTypeMirrors,
         superinterfacesTypeNames = superinterfacesTypeMirrors,
         exposeModels = additionsMatchingElement(element.asType(), state.exposeExtractors.values),
-        injectorModels = additionsMatchingElement(element.asType(), state.injectorExtractors.values),
+        injectorModels = additionsMatchingElement(
+            element.asType(),
+            state.injectorExtractors.values
+        ),
         subcomponents = subcomponentsTypeMirrors
     )
 

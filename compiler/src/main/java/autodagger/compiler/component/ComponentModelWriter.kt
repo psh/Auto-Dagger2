@@ -2,10 +2,15 @@ package autodagger.compiler.component
 
 import autodagger.AutoSubcomponent
 import autodagger.compiler.State
+import autodagger.compiler.binds.BindsExtractor
+import autodagger.compiler.binds.extractorsMatchingElement
+import autodagger.compiler.binds.getBindingModuleName
 import autodagger.compiler.utils.*
 import com.google.auto.common.MoreTypes
+import com.squareup.javapoet.ClassName
 import dagger.Component
 import javax.annotation.processing.Filer
+import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Modifier
 import com.squareup.javapoet.AnnotationSpec as JavapoetAnnotationSpec
 import com.squareup.javapoet.JavaFile as JavapoetJavaFile
@@ -15,14 +20,28 @@ import com.squareup.javapoet.TypeName as JavapoetTypeName
 import com.squareup.javapoet.TypeSpec as JavapoetTypeSpec
 
 fun ComponentModel.writeTo(state: State, extractors: Set<ComponentExtractor>, filer: Filer) {
+    val autoBindingModuleContent = extractorsMatchingElement(
+        targetTypeName, state.bindingExtractors
+    )
+    val autoBindingModuleName = className.getBindingModuleName()
+    if (autoBindingModuleContent.isNotEmpty()) {
+        createAutoBindingModule(autoBindingModuleName, autoBindingModuleContent, filer)
+    }
+
     val componentClassName = className.getComponentClassName()
     val builder = JavapoetTypeSpec.interfaceBuilder(componentClassName.simpleName())
         .addModifiers(Modifier.PUBLIC)
         .addAnnotation(generatedAnnotation())
-        .addAnnotation(componentAnnotation())
+        .addAnnotation(
+            componentAnnotation(
+                autoBindingModuleContent.isNotEmpty(),
+                autoBindingModuleName
+            )
+        )
         .apply {
-            superinterfaces(extractors)
-                .forEach { addSuperinterface(it) }
+            superinterfaces(extractors).forEach {
+                addSuperinterface(it)
+            }
 
             scopeAnnotation?.let {
                 addAnnotation(it.toJavapoetAnnotationSpec())
@@ -49,7 +68,49 @@ fun ComponentModel.writeTo(state: State, extractors: Set<ComponentExtractor>, fi
     }
 }
 
-private fun ComponentModel.componentAnnotation(): JavapoetAnnotationSpec =
+private fun createAutoBindingModule(
+    moduleName: ClassName,
+    moduleContent: List<BindsExtractor>,
+    filer: Filer
+) {
+    val moduleBuilder = JavapoetTypeSpec.classBuilder(moduleName)
+        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+        .addAnnotation(generatedAnnotation())
+        .addAnnotation(moduleAnnotation()).apply {
+            moduleContent.forEach {
+                addMethod(createAutoBindingMethod(it))
+            }
+        }
+
+    try {
+        JavapoetJavaFile.builder(moduleName.packageName(), moduleBuilder.build())
+            .build()
+            .writeTo(filer)
+    } catch (e: Exception) {
+    }
+}
+
+private fun createAutoBindingMethod(extractor: BindsExtractor) =
+    JavapoetMethodSpec.methodBuilder(extractor.bindingMethodName)
+        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+        .addAnnotation(bindsAnnotation())
+        .addParameter(
+            JavapoetParameterSpec.builder(
+                JavapoetTypeName.get(extractor.element.asType()),
+                "value"
+            ).build()
+        )
+        .returns(JavapoetTypeName.get(extractor.implementedInterface)).apply {
+            extractor.qualifierAnnotationMirror?.let<AnnotationMirror, JavapoetMethodSpec.Builder?> { am ->
+                addAnnotation(am.toJavapoetAnnotationSpec())
+            }
+        }
+        .build()
+
+private fun ComponentModel.componentAnnotation(
+    moduleContent: Boolean,
+    moduleName: ClassName
+): JavapoetAnnotationSpec =
     JavapoetAnnotationSpec.builder(Component::class.java).apply {
         val dependencies = dependenciesTypeNames
             ?.map { it.getComponentClassName() }
@@ -61,6 +122,10 @@ private fun ComponentModel.componentAnnotation(): JavapoetAnnotationSpec =
 
         getTypeNames(modulesTypeNames).forEach {
             addMember("modules", "\$T.class", it)
+        }
+
+        if (moduleContent) {
+            addMember("modules", "\$T.class", moduleName)
         }
     }.build()
 

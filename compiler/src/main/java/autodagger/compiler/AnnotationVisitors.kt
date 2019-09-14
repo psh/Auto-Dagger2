@@ -2,6 +2,7 @@ package autodagger.compiler
 
 import autodagger.AutoInjector
 import autodagger.compiler.addition.AdditionExtractor
+import autodagger.compiler.binds.BindsExtractor
 import autodagger.compiler.component.ComponentExtractor
 import autodagger.compiler.subcomponent.SubcomponentExtractor
 import autodagger.compiler.utils.notAnnotatedWith
@@ -10,10 +11,23 @@ import com.google.auto.common.MoreElements.asType
 import com.google.auto.common.MoreTypes.asElement
 import dagger.Provides
 import javax.lang.model.element.Element
-import javax.lang.model.element.ElementKind.ANNOTATION_TYPE
-import javax.lang.model.element.ElementKind.METHOD
+import javax.lang.model.element.ElementKind.*
+import javax.lang.model.element.TypeElement
 
 typealias Visitor = State.(processedAnnotation: Class<out Annotation>, element: Element) -> Unit
+
+val BINDS_VISITOR: Visitor = { a, e ->
+    if (e.kind == CLASS) {
+        (e as TypeElement).interfaces?.forEach {
+            val extractor = BindsExtractor(a, e, it, this)
+            if (extractor.targetTypeMirrors.isNotEmpty()) {
+                addBindingExtractor(extractor)
+            } else {
+                errors.addInvalid(e, "@AutoBinds needs a target component")
+            }
+        }
+    }
+}
 
 val INJECT_VISITOR: Visitor = { a, e ->
     when (e.kind) {
